@@ -37,8 +37,7 @@ Window window;
 Textures textures;
 Object* ship;
 
-// int windowWidth = 512, windowHeight = 512;  // window dimensions
-
+// int windowWidth = 512, windowHeight = 512;  // window dimensions 
 // GLint leftMouseButton, rightMouseButton;    // status of the mouse buttons
 // int mouseX = 0, mouseY = 0;                 // last known X and Y of the mouse
 
@@ -54,7 +53,7 @@ GLuint blurShaderProgramHandle;
 GLuint framebufferSizeLoc, blurSizeLoc;
 GLfloat BLUR_SIZE = 1;
 
-GLuint framebufferHandle; // not used yet.
+GLuint framebufferHandle;
 GLuint renderbufferHandle;
 GLuint framebufferWidth, framebufferHeight; // set these to the desired size
 
@@ -172,66 +171,76 @@ void init( const char *filename, const char *animfile )
     glEnable( GL_BLEND );
     glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
     
-    // Setup Framebuffer, not sure why this is NOT working.
-    // glGenFramebuffers( 1, &framebufferHandle ); // set framebufferHandel
+    // Generate Framebuffer
+    glGenFramebuffers( 1, &framebufferHandle ); // set framebufferHandle
+    // set to active
+    glBindFramebuffer( GL_FRAMEBUFFER, framebufferHandle );
 
-    // framebufferWidth = 1024;  // set fb width
-    // framebufferHeight = 1024; // set fb hight
+    // set dimension vars
+    framebufferWidth = 1024;  // set fb width
+    framebufferHeight = 1024; // set fb hight
 
-    // glGenRenderbuffers( 1, &renderbufferHandle ); // set renderbufferHandle
+    // Generate the render buffer
+    glGenRenderbuffers( 1, &renderbufferHandle ); // set renderbufferHandle
+    // set to active
+    glBindRenderbuffer( GL_RENDERBUFFER, renderbufferHandle );
 
-    // glBindFramebuffer( GL_FRAMEBUFFER, framebufferHandle );
-    // glBindRenderbuffer( GL_RENDERBUFFER, renderbufferHandle );
+    // Set up the options for the frame and render buffers
+    glRenderbufferStorage( 
+        GL_RENDERBUFFER,
+        GL_DEPTH_COMPONENT,
+        framebufferWidth,
+        framebufferHeight 
+    );
 
-    // glRenderbufferStorage( 
-    //     GL_RENDERBUFFER,
-    //     GL_DEPTH_COMPONENT,
-    //     framebufferWidth,
-    //     framebufferHeight 
-    // );
+    glFramebufferRenderbuffer( 
+        GL_FRAMEBUFFER,
+        GL_DEPTH_ATTACHMENT,
+        GL_RENDERBUFFER,
+        renderbufferHandle 
+    );
 
-    // glFramebufferRenderbuffer( 
-    //     GL_FRAMEBUFFER,
-    //     GL_DEPTH_ATTACHMENT,
-    //     GL_RENDERBUFFER,
-    //     renderbufferHandle 
-    // );
+    // Generate texture data that will be used with the frame buffer
+    glGenTextures( 1, &fboTexHandle ); // setting the texture handle
+    glBindTexture( GL_TEXTURE_2D, fboTexHandle ); // binding it to a texture 2d
 
-    // glGenTextures( 1, &fboTexHandle ); // setting the texture handle
-    // glBindTexture( GL_TEXTURE_2D, fboTexHandle ); // binding it to a texture 2d
+    // Load nothing into the texture
+    glTexImage2D( 
+        GL_TEXTURE_2D,
+        0,
+        GL_RGBA, //this needs to match the color buffer requested from GLUT
+        framebufferWidth,
+        framebufferHeight,
+        0,
+        GL_RGBA,
+        GL_UNSIGNED_BYTE,
+        NULL
+    );
 
-    // glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR ); // liner min filter
-    // glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR ); // liner max filter 
-    // glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE ); // clamp s to the edge
-    // glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE ); // clamp t to the edge
+    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR ); // liner min filter
+    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR ); // liner max filter 
+    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE ); // clamp s to the edge
+    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE ); // clamp t to the edge
+    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 
-    // glTexImage2D( 
-    //     GL_TEXTURE_2D,
-    //     0,
-    //     GL_RGBA, //this needs to match the color buffer requested from GLUT
-    //     framebufferWidth,
-    //     framebufferHeight,
-    //     0,
-    //     GL_RGBA,
-    //     GL_UNSIGNED_BYTE,
-    //     NULL
-    // );
 
-    // glFramebufferTexture2D( 
-    //     GL_FRAMEBUFFER,
-    //     GL_COLOR_ATTACHMENT0,
-    //     GL_TEXTURE_2D,
-    //     fboTexHandle,
-    //     0
-    // );
+    // Attach the texture to the framebuffer
+    glFramebufferTexture2D( 
+        GL_FRAMEBUFFER,
+        GL_COLOR_ATTACHMENT0,
+        GL_TEXTURE_2D,
+        fboTexHandle,
+        0
+    );
 
-    // GLenum status = glCheckFramebufferStatus( GL_FRAMEBUFFER );
+    // Error check
+    GLenum status = glCheckFramebufferStatus( GL_FRAMEBUFFER );
 
-    // if( status == GL_FRAMEBUFFER_COMPLETE ) {
-    //     printf( "Framebuffer initialized completely!\n" );
-    // } else {
-    //     printf( "Framebuffer FAILED TO INITIALIZE COMPLETELY.\n" );
-    // }
+    if( status == GL_FRAMEBUFFER_COMPLETE ) {
+        printf( "Framebuffer initialized completely!\n" );
+    } else {
+        printf( "Framebuffer FAILED TO INITIALIZE COMPLETELY.\n" );
+    }
 }
 
 void reshape( int w, int h )
@@ -270,13 +279,14 @@ void display() {
     last_time = curent_time;
     curent_time = ( (double)glutGet(GLUT_ELAPSED_TIME) / 1000.0 );
     
-    // Bind Framebuffer and Render full scene to framebuffer texture - not working b/c
-    // the init is not working
-    // glBindFramebuffer( GL_FRAMEBUFFER, framebufferHandle );
-    // glBindRenderbuffer( GL_RENDERBUFFER, renderbufferHandle );
+    // Bind Framebuffer and render full scene to framebuffer texture
+    glBindFramebuffer( GL_FRAMEBUFFER, framebufferHandle );
+        // push viewport to stack 
         glPushAttrib( GL_VIEWPORT_BIT ); {
-            // glViewport( 0, 0, framebufferWidth, framebufferHeight );
+            // Set the rendering viewport to match the framebuffer dimensions
+            glViewport( 0, 0, framebufferWidth, framebufferHeight );
 
+            // clear the framebuffer
             glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
             
             // update the modelview matrix based on the camera's position
@@ -296,34 +306,43 @@ void display() {
         }; glPopAttrib();
         
     // Unbind framebuffer
-    // glBindRenderbuffer( GL_RENDERBUFFER, 0 );
-    // glBindFramebuffer( GL_FRAMEBUFFER, 0 );
+    glBindFramebuffer( GL_FRAMEBUFFER, 0 );
+    // Clear the screen now
+    glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
-    
-    // TODO #9: Render texture to a 2D quad filling the scene
-    // glMatrixMode( GL_PROJECTION );
-    // glPushMatrix(); {
-    //     glLoadIdentity();
-    //     gluOrtho2D( -1, 1, -1, 1 );
+    glMatrixMode( GL_PROJECTION );
+    glPushMatrix(); {
+        glLoadIdentity();
+        gluOrtho2D( -1, 1, -1, 1 );
 
-    //     //and the modelview...
-    //     glMatrixMode( GL_MODELVIEW );
-    //     glLoadIdentity();
-    //     glDisable( GL_LIGHTING );
-    //     glEnable( GL_TEXTURE_2D );
-    //     glBindTexture( GL_TEXTURE_2D, fboTexHandle );
-    //     glUseProgram( blurShaderProgramHandle );
-    //     glBegin( GL_QUADS ); {
-    //         glTexCoord2f( 0,0 ); glVertex2f( -1,-1 );
-    //         glTexCoord2f( 1,0 ); glVertex2f( 1,-1 );
-    //         glTexCoord2f( 1,1 ); glVertex2f( 1,1 );
-    //         glTexCoord2f( 0,1 ); glVertex2f( -1,1 );
-    //     }; glEnd();
-    //     glUseProgram( 0 );
-    //     glDisable( GL_TEXTURE_2D );
-    //     glEnable( GL_LIGHTING );
-    // }; glMatrixMode( GL_PROJECTION );
-    // glPopMatrix();
+        //and the modelview...
+        glMatrixMode( GL_MODELVIEW );
+        glLoadIdentity();
+        
+        glDisable( GL_LIGHTING );
+        glDisable( GL_CULL_FACE );
+        glDisable( GL_DEPTH_TEST );
+
+        glEnable( GL_TEXTURE_2D );
+        glBindTexture( GL_TEXTURE_2D, fboTexHandle );
+
+        glUseProgram( blurShaderProgramHandle ); 
+        // Pass the framebuffersize and the blursize to the shader
+        glUniform1f(framebufferSizeLoc, (float)framebufferWidth);
+        glUniform1f(blurSizeLoc, BLUR_SIZE);
+        
+        glBegin( GL_QUADS ); {
+            glTexCoord2f( 0,0 ); glVertex2f( -1,-1 );
+            glTexCoord2f( 1,0 ); glVertex2f( 1,-1 );
+            glTexCoord2f( 1,1 ); glVertex2f( 1,1 );
+            glTexCoord2f( 0,1 ); glVertex2f( -1,1 );
+        }; glEnd();
+        glUseProgram( 0 );
+    } glMatrixMode( GL_PROJECTION );
+    glPopMatrix();
+    // reenable features
+    glEnable( GL_LIGHTING );
+    glEnable( GL_DEPTH_TEST );
 
     glutSwapBuffers();
 }
