@@ -23,8 +23,8 @@ void Enemy::move() {
 
 // calls glRotatef to face the direction heading, and spins around
 void Enemy::callRotate() {
+	// heading rotation
+    glRotatef(angle, axis.getX(), axis.getY(), axis.getZ());
     // Spin rotation
     glRotatef(rotation, direction.getX(), direction.getY(), direction.getZ());
-    // heading rotation
-    glRotatef(angle, axis.getX(), axis.getY(), axis.getZ());
 }

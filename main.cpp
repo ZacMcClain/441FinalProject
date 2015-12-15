@@ -41,10 +41,11 @@ Object* ship; // our ship model object
 float shipX, shipY; // Target for the ship to move to (in the screen plane)
 float shipScale = 0.1;
 int shakeCount; // number of frames to shake when ship hit.  Shaking done in vertex shader.
+int laserFrameCount; // number of frames to show the lasers after pressing spacebar
+bool fireLaser = false;
 
 // keys pressed boolean array
 bool keysPressed['z' - 'a'] = { false };
-bool fireLaser = false;
 
 // Vector of current enemy positions
 vector<Enemy> enemies;
@@ -122,7 +123,6 @@ void mouseCallback( int button, int state, int thisX, int thisY ) {
 void mouseMotion( int x, int y ) {
     // mouse is moving; if left button is held down...
     if( mouse->isLeftMouseButtonDown() ) {
-        
         cam->setTheta( cam->getTheta() + ((x - mouse->getX())*0.005) );
         cam->setPhi( cam->getPhi() + ((y - mouse->getY())*0.005 ) );
         
@@ -373,7 +373,7 @@ void drawLasers()
     glDisable(GL_LIGHTING);
     glEnable(GL_LINE_SMOOTH);
 	glLineWidth( 5 );
-	glTranslatef( shipX, 15.5*shipScale + shipY, 100.0);
+	glTranslatef( shipX, 22*shipScale + shipY, 100.0);
 	// glRotate with ship direction
 	glBegin(GL_LINES);
 	  glColor3f(1.0f, 0.0f, 0.0f);
@@ -397,7 +397,7 @@ void drawGlowObjs() {
   
   
   // if firing, draw lasers
-  if( fireLaser ){
+  if( laserFrameCount > 0 && fireLaser == true ){
 	drawLasers();
   }
 }
@@ -589,6 +589,12 @@ void keyboardUp( unsigned char key, int x, int y )
 void update( int value ) {
     // Decrease the ship shake count
     if (shakeCount > 0) shakeCount --;
+	
+	// put this before we decrease, so we skip two frame of drawing the laser when held down.
+	if ( laserFrameCount == -1 && fireLaser == true )
+		laserFrameCount = 7;
+	// Decrease laserFrameCount 
+	if (laserFrameCount > -1) laserFrameCount--;
     // Move ship to edge gradually if key pressed
     float delta = 0.3;
     // Clamping values (could get the real ones from the projection somehow. Meh)
