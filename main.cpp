@@ -49,8 +49,8 @@ Object* ship;
 
 bool DISPLAY_WIREFRAME = false;
 
-GLuint blurShaderProgramHandle;
-GLuint framebufferSizeLoc, blurSizeLoc;
+GLuint blurShaderProgramHandle, shiftShaderProgramHandle, passTextureShaderProgramHandle;
+GLuint framebufferSizeLoc, blurSizeLoc, timeLoc;
 GLfloat BLUR_SIZE = 1;
 
 GLuint framebufferHandle;
@@ -146,8 +146,9 @@ void init( const char *filename, const char *animfile )
     
     float lightCol[4] = { 1,1,1,1 };
     float ambientCol[4] = { 0.1,0.1,0.1,1.0 };
-    glLightfv( GL_LIGHT0,GL_DIFFUSE,lightCol );
+    glLightfv( GL_LIGHT0, GL_DIFFUSE, lightCol );
     glLightfv( GL_LIGHT0, GL_AMBIENT, ambientCol );
+    glLightf( GL_LIGHT0, GL_CONSTANT_ATTENUATION, 1.5 );
     glEnable( GL_LIGHTING );
     glEnable( GL_LIGHT0 );
     
@@ -340,13 +341,18 @@ void display() {
     // Clear the screen now
     glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
     
-    // Render the background
+    // Render the background with the "shifting texture" shader
+    glUseProgram(shiftShaderProgramHandle);
+    glUniform1f(timeLoc, (float)curent_time);
     glLoadIdentity();
     cam->lookAt();
     skyBox->drawSkybox( 300 );
     // And now render the ship...
+    glUseProgram(passTextureShaderProgramHandle);
     glPushMatrix(); {
       glScalef(0.1, 0.1, 0.1);
+      glEnable(GL_TEXTURE_2D);
+      //TODO: this doesn't texture for some reason.
       glBindTexture( GL_TEXTURE_2D, *textures.at("x-wing") );
       ship->draw();
     } glPopMatrix();
@@ -365,7 +371,6 @@ void display() {
         glDisable( GL_LIGHTING );
         glDisable( GL_DEPTH_TEST );
 
-        //glEnable(GL_TEXTURE_2D);
         glBindTexture( GL_TEXTURE_2D, fboTexHandle );
 
         glUseProgram( blurShaderProgramHandle ); 
@@ -463,11 +468,6 @@ void registerTextures() {
 }
 
 int main( int argc, char *argv[] ) {
-    // if (argc < 1) {
-    //     fprintf (stderr, "usage: %s <config file> \n", argv[0]);
-    //     return 0;
-    // }
-    
     glutInit( &argc, argv );
     glutInitDisplayMode( GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH );
     glutInitWindowSize( window.getWidth(), window.getHeight() );
@@ -502,6 +502,12 @@ int main( int argc, char *argv[] ) {
     blurShaderProgramHandle = createShaderProgram( "shaders/blur.v.glsl", "shaders/blur.f.glsl", "Blur Shader Program" );
     framebufferSizeLoc = glGetUniformLocation( blurShaderProgramHandle, "framebufferSize" );
     blurSizeLoc = glGetUniformLocation( blurShaderProgramHandle, "blurSize" );
+
+    shiftShaderProgramHandle = createShaderProgram("shaders/shift.v.glsl", "shaders/shift.f.glsl", "Shift Shader Program");
+    timeLoc = glGetUniformLocation( shiftShaderProgramHandle, "time" );
+
+    // This one fixes our x-wing texturing problems.  Its just a pass through.
+    passTextureShaderProgramHandle = createShaderProgram("shaders/pass.v.glsl", "shaders/pass.f.glsl", "Pass Texture Program");
     
     glutReshapeFunc( reshape );
     glutDisplayFunc( display );
