@@ -58,6 +58,8 @@ Object* asteroid;
 bool gameOver = false;
 // end of game message:
 string message;
+// keeping track of the score.
+int score = 0;
 
 GLuint blurShaderProgramHandle, shiftShaderProgramHandle;
 GLuint passTextureShaderProgramHandle, glowShaderProgramHandle;
@@ -295,7 +297,7 @@ void drawText()
     for( int i = 0; i < message.length(); i++ ) {
         if( gameOver ) {
             glColor4f( 0, 1, 0, 1 );
-            message = "YOU WON!!! Press 'q' to quit";
+            message = "You died!!! With a score of: " + to_string( score ) + ". Press 'q' to quit";
             messageH = (window.getHeight()/4);
         } else {
             glColor4f( 1, 1, 1, 1 );
