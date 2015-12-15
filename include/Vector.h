@@ -48,7 +48,4 @@
 	
 	Matrix tensor(Vector a, Vector b);
 
-    void glRotatef( float angle, Vector axis );
-    void glNormal3f( Vector normal );
-
 #endif

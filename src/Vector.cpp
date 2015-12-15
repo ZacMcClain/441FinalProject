@@ -59,12 +59,14 @@
 		return Vector(a.getX()-b.getX(), a.getY()-b.getY(), a.getZ()-b.getZ());
 	}
 
+
 	Vector& Vector::operator+=(Vector rhs) {
 		this->setX( this->getX() + rhs.getX() );
 		this->setY( this->getY() + rhs.getY() );
 		this->setZ( this->getZ() + rhs.getZ() );
 		return *this;
 	}
+
 
 	Vector& Vector::operator-=(Vector rhs) {
 		this->setX( this->getX() - rhs.getX() );
@@ -162,10 +164,4 @@
 		return m;
 	}
 	
-    void glRotatef( float angle, Vector axis ) {
-        glRotatef( angle, axis.getX(), axis.getY(), axis.getZ() );
-    }
 
-    void glNormal3f( Vector normal ) {
-        normal.glNormal();
-    }

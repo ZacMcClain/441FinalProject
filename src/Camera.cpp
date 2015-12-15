@@ -56,14 +56,19 @@ void Camera::lookAt()
 void Camera::clacDirection()
 {
 	// the view
-	direction = vectorFrom( position, lookAtPoint );
+  direction = Vector(
+      lookAtPoint->getX() - position->getX(),
+      lookAtPoint->getY() - position->getY(),
+      lookAtPoint->getZ() - position->getZ()
+      );
 	direction.normalize();
 }
 
 void Camera::updateDirection()
 {
-	updateVector( &direction, position, lookAtPoint );
-	direction.normalize();
+	//updateVector( &direction, position, lookAtPoint );
+
+	//direction.normalize();
 }
 
 //** Getters and Setters:

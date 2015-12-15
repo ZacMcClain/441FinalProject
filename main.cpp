@@ -138,7 +138,7 @@ void mouseMotion( int x, int y ) {
 void init( const char *filename, const char *animfile )
 {
     /* Initialize OpenGL context */
-    glClearColor( 0.5f,0.5f,0.5f,1.0f );
+    glClearColor( 1, 1, 1, 0.1 );
     
     //tell OpenGL not to use the material system; just use whatever we pass with glColor()
     glEnable( GL_COLOR_MATERIAL );
@@ -164,7 +164,7 @@ void init( const char *filename, const char *animfile )
     mouse = new Mouse();
     skyBox = new SkyBox();
     // init our camera a pretty starting point
-    cam = new ArcballCamera( 35.0f, 1.025f, 2.0f );
+    cam = new ArcballCamera( 35.0f, 0.0f, 90.0f );
     // cameraTPR = Point( 2.0, 1.57, 200.0 );
     // cameraLookAt = Point( 0,0,0 );
     
@@ -259,27 +259,21 @@ void reshape( int w, int h )
     glLoadIdentity();
 }
 
-void drawObjs()
-{
-    glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
-
-    skyBox->drawSkybox( 300 );
-
-    glPushMatrix(); {   
-        // ship->draw();
-    }; glPopMatrix();
+// Draws objects that should glow (just the lasers when finished)
+void drawGlowObjs() {
+  // just a cube for testing
+  glColor4f(0, 1, 0, 1);
+  glutSolidCube(10);
 }
 
 void display() {
-    int i;
-    
     static double curent_time = 0;
     static double last_time = 0;
     
     last_time = curent_time;
     curent_time = ( (double)glutGet(GLUT_ELAPSED_TIME) / 1000.0 );
     
-    // Bind Framebuffer and render full scene to framebuffer texture
+    // Bind Framebuffer and render glowing objects to framebuffer texture
     glBindFramebuffer( GL_FRAMEBUFFER, framebufferHandle );
         // push viewport to stack 
         glPushAttrib( GL_VIEWPORT_BIT ); {
@@ -298,7 +292,9 @@ void display() {
             float lPosition[4] = { 100, 100, 100, 1 };
             glLightfv( GL_LIGHT0, GL_POSITION, lPosition );
             
-            drawObjs();
+            glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
+            // Draws only objects that should glow
+            drawGlowObjs();
 
             // Make sure that OpenGL has finished rendering everything...
             glFlush(); glFinish();
@@ -309,7 +305,19 @@ void display() {
     glBindFramebuffer( GL_FRAMEBUFFER, 0 );
     // Clear the screen now
     glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+    
+    // Render the background
+    glLoadIdentity();
+    cam->lookAt();
+    skyBox->drawSkybox( 300 );
+    // And now render the ship...
+    glPushMatrix(); {
+      glScalef(0.1, 0.1, 0.1);
+      ship->draw();
+    } glPopMatrix();
 
+    // Then render the framebuffer contents as a textured 2d quad
+    // on top of the scene with the glow shader
     glMatrixMode( GL_PROJECTION );
     glPushMatrix(); {
         glLoadIdentity();
@@ -320,7 +328,6 @@ void display() {
         glLoadIdentity();
         
         glDisable( GL_LIGHTING );
-        glDisable( GL_CULL_FACE );
         glDisable( GL_DEPTH_TEST );
 
         glEnable( GL_TEXTURE_2D );
@@ -337,12 +344,15 @@ void display() {
             glTexCoord2f( 1,1 ); glVertex2f( 1,1 );
             glTexCoord2f( 0,1 ); glVertex2f( -1,1 );
         }; glEnd();
+
         glUseProgram( 0 );
     } glMatrixMode( GL_PROJECTION );
     glPopMatrix();
+
     // reenable features
     glEnable( GL_LIGHTING );
     glEnable( GL_DEPTH_TEST );
+    
 
     glutSwapBuffers();
 }
@@ -417,13 +427,13 @@ int main( int argc, char *argv[] ) {
     //     fprintf (stderr, "usage: %s <config file> \n", argv[0]);
     //     return 0;
     // }
-
-    // ship = new Object( "./models/Ship/X-Wing/X-Wing.obj" );
     
     glutInit( &argc, argv );
     glutInitDisplayMode( GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH );
     glutInitWindowSize( window.getWidth(), window.getHeight() );
     glutCreateWindow( "keyToTheKingdom" );
+
+    ship = new Object( "./models/Ship/X-Wing/X-Wing.obj" );
     
     /* initialize GLEW */
     GLenum glewResult = glewInit();
