@@ -22,6 +22,12 @@ ObjectBase::~ObjectBase()
 	delete position;
 }
 
+//** Functions
+void ObjectBase::translate()
+{
+	position->glTranslate();
+}
+
 //** Getters and Setters:
 
 //* Getters:

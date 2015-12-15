@@ -26,6 +26,7 @@
 #include "Textures.h"
 #include "Object.h"
 #include "Enemy.h"
+#include "Ship.h"
 
 using namespace std;
 
@@ -37,8 +38,7 @@ SkyBox* skyBox; // our background sky box
 Window window; // keeps take of our window stuff
 Textures textures; // a container for out textures
 
-Object* ship; // our ship model object
-float shipX, shipY; // Target for the ship to move to (in the screen plane)
+Ship* ship; // our ship model object
 float shipScale = 0.1;
 int shakeCount; // number of frames to shake when ship hit.  Shaking done in vertex shader.
 int laserFrameCount; // number of frames to show the lasers after pressing spacebar
@@ -53,7 +53,7 @@ vector<Enemy> enemies;
 Object* enemyModel;
 
 // A Asteroid for testing
-Object* asteroid;
+Object* asteroidModel;
 
 // keep track of game status:
 bool gameOver = false;
@@ -318,7 +318,7 @@ void drawLasers()
     glDisable(GL_LIGHTING);
     glEnable(GL_LINE_SMOOTH);
 	glLineWidth( 5 );
-	glTranslatef(50*shipScale + shipX, 21.5*shipScale + shipY, 0.0);
+	glTranslatef(50*shipScale + ship->getX(), 21.5*shipScale + ship->getY(), 0.0);
 	// glRotate with ship direction
 	glBegin(GL_LINES);
 	  glColor3f(1.0f, 0.0f, 0.0f);
@@ -332,7 +332,7 @@ void drawLasers()
     glDisable(GL_LIGHTING);
     glEnable(GL_LINE_SMOOTH);
 	glLineWidth( 5 );
-	glTranslatef(50*shipScale + shipX, 15.5*shipScale + shipY, 0.0);
+	glTranslatef(50*shipScale + ship->getX(), 15.5*shipScale + ship->getY(), 0.0);
 	// glRotate with ship direction
 	glBegin(GL_LINES);
 	  glColor3f(1.0f, 0.0f, 0.0f);
@@ -346,7 +346,7 @@ void drawLasers()
     glDisable(GL_LIGHTING);
     glEnable(GL_LINE_SMOOTH);
 	glLineWidth( 5 );
-	glTranslatef(-50*shipScale + shipX, 21.5*shipScale + shipY, 0.0);
+	glTranslatef(-50*shipScale + ship->getX(), 21.5*shipScale + ship->getY(), 0.0);
 	// glRotate with ship direction
 	glBegin(GL_LINES);
 	  glColor3f(1.0f, 0.0f, 0.0f);
@@ -361,7 +361,7 @@ void drawLasers()
     glDisable(GL_LIGHTING);
     glEnable(GL_LINE_SMOOTH);
 	glLineWidth( 5 );
-	glTranslatef(-50*shipScale + shipX, 15.5*shipScale + shipY, 0.0);
+	glTranslatef(-50*shipScale + ship->getX(), 15.5*shipScale + ship->getY(), 0.0);
 	// glRotate with ship direction
 	glBegin(GL_LINES);
 	  glColor3f(1.0f, 0.0f, 0.0f);
@@ -375,7 +375,7 @@ void drawLasers()
     glDisable(GL_LIGHTING);
     glEnable(GL_LINE_SMOOTH);
 	glLineWidth( 5 );
-	glTranslatef( shipX, 22*shipScale + shipY, 100.0);
+	glTranslatef( ship->getX(), 22*shipScale + ship->getY(), 100.0);
 	// glRotate with ship direction
 	glBegin(GL_LINES);
 	  glColor3f(1.0f, 0.0f, 0.0f);
@@ -457,7 +457,7 @@ void display() {
     glUniform1i(passHitLoc, shakeCount); // if > 0, shakes the ship left/right
     glBindTexture( GL_TEXTURE_2D, *textures.at("x-wing") );
     glPushMatrix(); {
-      glTranslatef( shipX, shipY, 0 );
+      ship->translate();
       glScalef( shipScale, shipScale, shipScale );
       ship->draw();
     } glPopMatrix();
@@ -465,7 +465,7 @@ void display() {
     glBindTexture( GL_TEXTURE_2D, 0 );
 
 	// position the spot light and direction
-	float spotlightPosition[4] = { shipX, 21.5*shipScale + shipY, 0.0, 1.0 };
+	float spotlightPosition[4] = { ship->getX(), 21.5*shipScale + ship->getY(), 0.0, 1.0 };
 	glLightfv( GL_LIGHT1, GL_POSITION, spotlightPosition );
 	GLfloat spotlightDirection[4] = { 0.0, 0.0, 1.0, 0.0};
 	glLightfv( GL_LIGHT1, GL_SPOT_DIRECTION, spotlightDirection );
@@ -479,10 +479,10 @@ void display() {
                 glBindTexture( GL_TEXTURE_2D, *textures.at("tiefighter"));
                 enemyModel->draw();
             } else {          
-                glBindTexture( GL_TEXTURE_2D, *textures.at("asteroid") );
-                float asteroidScale = enemies[i].getScale();
-                glScalef( asteroidScale, asteroidScale, asteroidScale );
-                asteroid->draw();
+                glBindTexture( GL_TEXTURE_2D, *textures.at("asteroidModel") );
+                float asteroidModelScale = enemies[i].getScale();
+                glScalef( asteroidModelScale, asteroidModelScale, asteroidModelScale );
+                asteroidModel->draw();
             }
             glBindTexture( GL_TEXTURE_2D, 0 );
         } glPopMatrix(); 
@@ -534,7 +534,7 @@ void cleanup() {
     delete skyBox;
     delete ship;
     delete enemyModel;
-    delete asteroid;
+    delete asteroidModel;
 }
 
 // Runs on key down
@@ -592,37 +592,18 @@ void keyboardUp( unsigned char key, int x, int y )
 //
 void update( int value ) {
     // Decrease the ship shake count
-    if (shakeCount > 0) shakeCount --;
+    if (shakeCount > 0) shakeCount--;
 	
 	// put this before we decrease, so we skip two frame of drawing the laser when held down.
-	if ( laserFrameCount == -1 && fireLaser == true )
+	if( laserFrameCount == -1 && fireLaser == true )
 		laserFrameCount = 7;
 	// Decrease laserFrameCount 
-	if (laserFrameCount > -1) laserFrameCount--;
-    // Move ship to edge gradually if key pressed
-    float delta = 0.3;
-    // Clamping values (could get the real ones from the projection somehow. Meh)
-    float maxY = 10;
-    float minY = -12;
-    float maxX = 15;
-    float minX = -15;
+	if( laserFrameCount > -1 ) laserFrameCount--;
 
-    // up/down
-    if (keysPressed['w' - 'a']) {
-        shipY += delta;
-        shipY = fmax(minY, fmin(shipY, maxY));
-    } else if (keysPressed['s' - 'a']) {
-        shipY -= delta;
-        shipY = fmax(minY, fmin(shipY, maxY));
-    }
-    // left/right
-    if (keysPressed[0]) {
-        shipX += delta;
-        shipX = fmax(minX, fmin(shipX, maxX));
-    } else if (keysPressed['d' - 'a']) {
-        shipX -= delta;
-        shipX = fmax(minX, fmin(shipX, maxX));
-    }
+    ship->moveUp( keysPressed['w' - 'a'] );
+    ship->moveDown( keysPressed['s' - 'a'] );
+    ship->moveLeft( keysPressed[0] );
+    ship->moveRight( keysPressed['d' - 'a'] );
 
     // Chance to spawn new enemy
     int r = rand() % 100;
@@ -630,7 +611,7 @@ void update( int value ) {
         // generate random position right behind the skybox
         int x = rand() % 100 - 50;
         int y = rand() % 100 - 50;
-        Enemy e( x,y,300, shipX, shipY );
+        Enemy e( x,y,300, ship->getX(), ship->getY() );
         int tp = rand() % 2;
         e.type = ( tp == 0 ) ? Enemy::Type::SHIP : Enemy::Type::ROCK;
         if( e.type == Enemy::Type::ROCK ) e.calcRandAsteroidSizeScaler();
@@ -691,9 +672,9 @@ void registerTextures() {
     registerSOILTexture("./models/Enemy/tie_fighter/imp_fly_tiefighter.png", *textures.at("tiefighter"));
     printf("[INFO]: TIE Fighter texture read in and registered\n");
 
-    // load the asteroid texture
-    textures.add("asteroid");
-    registerSOILTexture("./models/Rocks/large/Textures/enemy_rock2_s3tc.png", *textures.at("asteroid"));
+    // load the asteroidModel texture
+    textures.add("asteroidModel");
+    registerSOILTexture("./models/Rocks/large/Textures/enemy_rock2_s3tc.png", *textures.at("asteroidModel"));
     printf("[INFO]: Asteroid texture read in and registered\n");
     //////////////////////////////////////////////////////////////////////////////////////////
 }
@@ -704,10 +685,10 @@ int main( int argc, char *argv[] ) {
     glutInitWindowSize( window.getWidth(), window.getHeight() );
     glutCreateWindow( "keyToTheKingdom" );
 
-    ship = new Object( "./models/Ship/X-Wing/X-Wing.obj" );
-    shipX = shipY = 0;
+    ship = new Ship( "./models/Ship/X-Wing/X-Wing.obj" );
+    //shipX = shipY = 0;
     enemyModel = new Object("./models/Enemy/tie_fighter/imp_fly_tiefighter.obj");
-    asteroid = new Object("./models/Rocks/large/Large Rock.obj");
+    asteroidModel = new Object("./models/Rocks/large/Large Rock.obj");
     
     /* initialize GLEW */
     GLenum glewResult = glewInit();

@@ -6,8 +6,8 @@
 #define OBJECTBASE_H
 
 //** Load Dependences:
-
 #include "Point.h"
+#include <math.h>
 
 class ObjectBase
 {
@@ -22,6 +22,7 @@ class ObjectBase
 		~ObjectBase();
 
 	//** Functions:
+		void translate();
 
 	//** Getters and Setters:
 

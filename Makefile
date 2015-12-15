@@ -43,6 +43,7 @@ OBJECTS = main.o \
 		  src/Mouse.o \
 		  src/Window.o \
 		  src/Enemy.o \
+		  src/Ship.o \
 
 LOCAL_INC_PATH = ../CSCI441GFx/include
 LOCAL_LIB_PATH = ../CSCI441GFx/lib
