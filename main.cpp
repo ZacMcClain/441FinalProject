@@ -39,10 +39,12 @@ Textures textures; // a container for out textures
 
 Object* ship; // our ship model object
 float shipX, shipY; // Target for the ship to move to (in the screen plane)
+float shipScale = 0.1;
 int shakeCount; // number of frames to shake when ship hit.  Shaking done in vertex shader.
 
 // keys pressed boolean array
 bool keysPressed['z' - 'a'] = { false };
+bool fireLaser = false;
 
 // Vector of current enemy positions
 vector<Enemy> enemies;
@@ -308,6 +310,80 @@ void drawText()
   glMatrixMode( GL_MODELVIEW );
 }
 
+void drawLasers()
+{
+  glPushMatrix();
+    glDisable(GL_LIGHTING);
+    glEnable(GL_LINE_SMOOTH);
+	glLineWidth( 5 );
+	glTranslatef(50*shipScale + shipX, 21.5*shipScale + shipY, 0.0);
+	// glRotate with ship direction
+	glBegin(GL_LINES);
+	  glColor3f(1.0f, 0.0f, 0.0f);
+	  glVertex3f(0, 0, 0);
+	  glVertex3f(0, 0, 100*shipScale);
+	glEnd();
+    glEnable(GL_LIGHTING);
+  glPopMatrix();
+  
+  glPushMatrix();
+    glDisable(GL_LIGHTING);
+    glEnable(GL_LINE_SMOOTH);
+	glLineWidth( 5 );
+	glTranslatef(50*shipScale + shipX, 15.5*shipScale + shipY, 0.0);
+	// glRotate with ship direction
+	glBegin(GL_LINES);
+	  glColor3f(1.0f, 0.0f, 0.0f);
+	  glVertex3f(0, 0, 0);
+	  glVertex3f(0, 0, 100*shipScale);
+	glEnd();
+    glEnable(GL_LIGHTING);
+  glPopMatrix();
+  
+  glPushMatrix();
+    glDisable(GL_LIGHTING);
+    glEnable(GL_LINE_SMOOTH);
+	glLineWidth( 5 );
+	glTranslatef(-50*shipScale + shipX, 21.5*shipScale + shipY, 0.0);
+	// glRotate with ship direction
+	glBegin(GL_LINES);
+	  glColor3f(1.0f, 0.0f, 0.0f);
+	  glVertex3f(0, 0, 0);
+	  glVertex3f(0, 0, 100*shipScale);
+	glEnd();
+  
+  glEnable(GL_LIGHTING);
+  glPopMatrix();
+
+  glPushMatrix();
+    glDisable(GL_LIGHTING);
+    glEnable(GL_LINE_SMOOTH);
+	glLineWidth( 5 );
+	glTranslatef(-50*shipScale + shipX, 15.5*shipScale + shipY, 0.0);
+	// glRotate with ship direction
+	glBegin(GL_LINES);
+	  glColor3f(1.0f, 0.0f, 0.0f);
+	  glVertex3f(0, 0, 0);
+	  glVertex3f(0, 0, 100*shipScale);
+	glEnd();
+    glEnable(GL_LIGHTING);
+  glPopMatrix();
+  
+  glPushMatrix();
+    glDisable(GL_LIGHTING);
+    glEnable(GL_LINE_SMOOTH);
+	glLineWidth( 5 );
+	glTranslatef( shipX, 15.5*shipScale + shipY, 100.0);
+	// glRotate with ship direction
+	glBegin(GL_LINES);
+	  glColor3f(1.0f, 0.0f, 0.0f);
+	  glVertex3f(0, 0, 0);
+	  glVertex3f(0, 0, 100*shipScale);
+	glEnd();
+    glEnable(GL_LIGHTING);
+  glPopMatrix();
+}
+
 // Draws objects that should glow (just the lasers when finished)
 void drawGlowObjs() {
   // just a cube for testing
@@ -319,34 +395,11 @@ void drawGlowObjs() {
     glutSolidCube(3);
   } glPopMatrix();
   
-  glPushMatrix();
-    glDisable(GL_LIGHTING);
-    glEnable(GL_LINE_SMOOTH);
-	glLineWidth( 5 );
-	glTranslatef(5.0, 2.15, 0.0);
-	// glRotate with ship direction
-	glBegin(GL_LINES);
-	glColor3f(1.0f, 0.0f, 0.0f);
-	  glVertex3f(0, 0, 0);
-	  glVertex3f(0, 0, 10);
-	glEnd();
   
-  glEnable(GL_LIGHTING);
-  glPopMatrix();
-    glPushMatrix();
-    glDisable(GL_LIGHTING);
-    glEnable(GL_LINE_SMOOTH);
-	glLineWidth( 5 );
-	glTranslatef(-5.0, 2.15, 0.0);
-	// glRotate with ship direction
-	glBegin(GL_LINES);
-	glColor3f(1.0f, 0.0f, 0.0f);
-	  glVertex3f(0, 0, 0);
-	  glVertex3f(0, 0, 10);
-	glEnd();
-  
-  glEnable(GL_LIGHTING);
-  glPopMatrix();
+  // if firing, draw lasers
+  if( fireLaser ){
+	drawLasers();
+  }
 }
 
 void display() {
@@ -403,7 +456,7 @@ void display() {
     glBindTexture( GL_TEXTURE_2D, *textures.at("x-wing") );
     glPushMatrix(); {
       glTranslatef( shipX, shipY, 0 );
-      glScalef( 0.1, 0.1, 0.1 );
+      glScalef( shipScale, shipScale, shipScale );
       ship->draw();
     } glPopMatrix();
 
@@ -416,7 +469,7 @@ void display() {
     } glPopMatrix();
 
 	// position the spot light and direction
-	float spotlightPosition[4] = { 0.0, 2.15, 0.0, 1.0 };
+	float spotlightPosition[4] = { shipX, 21.5*shipScale + shipY, 0.0, 1.0 };
 	glLightfv( GL_LIGHT1, GL_POSITION, spotlightPosition );
 	GLfloat spotlightDirection[4] = { 0.0, 0.0, 1.0, 0.0};
 	glLightfv( GL_LIGHT1, GL_SPOT_DIRECTION, spotlightDirection );
@@ -493,6 +546,7 @@ void keyboard( unsigned char key, int x, int y )
         if( BLUR_SIZE < 1 ) BLUR_SIZE = 1;
     } else if( key == ' ' ) {
         // shoot laser
+		fireLaser = true;
     } else if( key == 'w' || key == 'W' ) {
         keysPressed['w' - 'a'] = true;
     } else if( key == 'a' || key == 'A' ) {
@@ -519,6 +573,9 @@ void keyboardUp( unsigned char key, int x, int y )
     } else if( key == 's' || key == 'S' ) {
         keysPressed['s' - 'a'] = false;
     }
+	  else if( key == ' ' ){
+		fireLaser = false;
+	}
 }
 
 // void myTimer(int value)
