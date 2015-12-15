@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="utf-8"?>
+<COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1">
+  <asset>
+    <contributor>
+      <author>Shadowth117</author>
+      <authoring_tool>3dsMax 11 - Feeling ColladaMax v3.05B.</authoring_tool>
+      <comments>ColladaMax Export Options: ExportNormals=1;ExportEPolyAsTriangles=1;ExportXRefs=1;ExportSelected=0;ExportTangents=0;ExportAnimations=1;SampleAnim=0;ExportAnimClip=0;BakeMatrices=0;ExportRelativePaths=1;AnimStart=0;AnimEnd=3.33333;</comments>
+      <source_data>file:///F:/Softwrap/YOYOGAMESGM70FINAL/Pre%20Nuke%20HD%20files/Public%20Documents/Documents/Spriter%27s%20resource/Models/Pikmin%202/Enemy%20Rocks/sekikaobj_small/sekikaobj_small.max</source_data>
+    </contributor>
+    <created>2010-05-31T15:49:49Z</created>
+    <modified>2010-05-31T15:49:49Z</modified>
+    <unit meter="0.0254" name="inch"/>
+    <up_axis>Z_UP</up_axis>
+  </asset>
+  <library_images>
+    <image id="enemy_rock2_s3tc.png" name="enemy_rock2_s3tc_png">
+      <init_from>./Textures/enemy_rock2_s3tc.png</init_from>
+    </image>
+  </library_images>
+  <library_materials>
+    <material id="lambert6" name="lambert6">
+      <instance_effect url="#lambert6-fx"/>
+    </material>
+  </library_materials>
+  <library_effects>
+    <effect id="lambert6-fx" name="lambert6">
+      <profile_COMMON>
+        <newparam sid="enemy_rock2_s3tc_png-surface">
+          <surface type="2D">
+            <init_from>enemy_rock2_s3tc.png</init_from>
+            <format>A8R8G8B8</format>
+          </surface>
+        </newparam>
+        <newparam sid="enemy_rock2_s3tc_png-sampler">
+          <sampler2D>
+            <source>enemy_rock2_s3tc_png-surface</source>
+            <wrap_s>WRAP</wrap_s>
+            <wrap_t>WRAP</wrap_t>
+            <minfilter>NONE</minfilter>
+            <magfilter>NONE</magfilter>
+            <mipfilter>NONE</mipfilter>
+          </sampler2D>
+        </newparam>
+        <technique sid="common">
+          <blinn>
+            <ambient>
+              <color>0.588 0.588 0.588 1</color>
+            </ambient>
+            <diffuse>
+              <texture texture="enemy_rock2_s3tc_png-sampler" texcoord="CHANNEL1">
+                <extra>
+                  <technique profile="MAYA">
+                    <mirrorU>0</mirrorU>
+                    <mirrorV>0</mirrorV>
+                    <wrapU>1</wrapU>
+                    <wrapV>1</wrapV>
+                    <repeatU>1</repeatU>
+                    <repeatV>1</repeatV>
+                    <offsetU>0</offsetU>
+                    <offsetV>0</offsetV>
+                    <rotateUV>0</rotateUV>
+                  </technique>
+                  <technique profile="MAX3D">
+                    <amount>1</amount>
+                  </technique>
+                </extra>
+              </texture>
+            </diffuse>
+            <specular>
+              <color>0.9 0.9 0.9 1</color>
+            </specular>
+            <shininess>
+              <float>0.415939</float>
+            </shininess>
+            <reflective>
+              <color>0 0 0 1</color>
+            </reflective>
+            <reflectivity>
+              <float>1</float>
+            </reflectivity>
+            <transparent opaque="A_ONE">
+              <color>1 1 1 1</color>
+            </transparent>
+            <transparency>
+              <float>1</float>
+            </transparency>
+          </blinn>
+          <extra>
+            <technique profile="FCOLLADA">
+              <spec_level>
+                <float>0</float>
+              </spec_level>
+              <emission_level>
+                <float>0</float>
+              </emission_level>
+            </technique>
+          </extra>
+        </technique>
+      </profile_COMMON>
+      <extra>
+        <technique profile="MAX3D">
+          <faceted>0</faceted>
+          <double_sided>0</double_sided>
+          <wireframe>0</wireframe>
+          <face_map>0</face_map>
+        </technique>
+      </extra>
+    </effect>
+  </library_effects>
+  <library_geometries>
+    <geometry id="sekikaobj_small-mesh" name="sekikaobj_small">
+      <mesh>
+        <source id="sekikaobj_small-mesh-positions">
+          <float_array id="sekikaobj_small-mesh-positions-array" count="90">2.14478 -4.58057 -0.019287 5.15674 0.312012 -0.85791 -5.15527 -0.046875 -0.230469 -0.106445 -4.84521 1.0105 -0.000732 -2.20166 -5.28516 1.47461 -0.002441 -5.56177 2.20703 2.41138 -3.78247 -0.000976 -4.64307 -2.76929 0.000244 -3.69067 3.30884 3.08301 -1.76392 4.12061 4.68677 0.118408 2.74707 3.82861 3.21436 0.336182 -2.75098 -1.78076 4.12207 -4.68408 0.121826 2.74854 -3.82471 3.53906 0.337646 -4.04907 -3.45239 -1.55176 4.04736 -3.45557 -1.55322 -3.64185 -0.473633 -4.03442 3.64136 -0.476563 -4.03564 -2.27539 2.44751 -3.90283 -0.015869 3.93774 -2.34229 2.72998 3.77368 2.46313 -2.72485 3.47168 2.46411 -0.000976 -3.52246 -4.70239 -2.25659 -3.58374 -4.08252 4.42285 -2.27417 -2.87476 -4.42383 -1.76831 -2.87329 -1.72534 1.11133 5.70142 1.71924 0.50708 5.88477 -0.019531 3.49194 4.94922</float_array>
+          <technique_common>
+            <accessor source="#sekikaobj_small-mesh-positions-array" count="30" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="sekikaobj_small-mesh-normals">
+          <float_array id="sekikaobj_small-mesh-normals-array" count="132">-0.661997 0.145279 -0.735291 0.104852 -0.557442 -0.823568 -0.408492 -0.609523 -0.679424 -0.451367 -0.360144 -0.816434 -0.451367 -0.360144 -0.816434 -0.238565 -0.291278 -0.926415 -0.421262 0.617789 -0.663984 -0.340517 0.111002 -0.933663 -0.340517 0.111002 -0.933663 0.088255 0.040204 -0.995286 0.023105 0.928495 -0.370624 0.394093 0.655354 -0.644362 -0.740901 -0.658537 -0.131888 -0.498398 -0.472194 0.727071 -0.898326 -0.012272 0.439158 -0.50525 -0.789596 0.348226 -0.50525 -0.789596 0.348226 -0.295737 -0.942036 0.158455 0.040216 -0.952922 -0.300535 0.412436 -0.90655 0.089798 0.712984 -0.690158 -0.123836 0.345188 -0.009626 0.938484 0.531619 0.77975 0.330713 0.018203 0.553378 0.832732 0.912685 0.016214 0.408342 0.566041 -0.51769 0.641556 -0.055195 0.997123 0.051956 -0.458305 0.82066 0.341283 -0.055195 0.997123 0.051956 0.692817 0.717933 -0.067642 -0.643322 0.765283 -0.021872 -0.995696 0.056849 -0.07319 0.700139 0.049217 -0.712308 0.588924 0.356098 -0.725509 0.978385 0.148735 -0.143667 0.788788 -0.382383 -0.481244 0.411363 -0.788557 -0.45712 -0.071128 -0.764809 0.640319 0.292469 -0.859895 0.418381 0.292469 -0.859895 0.418381 0.292469 -0.859895 0.418381 -0.411674 0.10328 0.90546 0.450858 -0.360387 -0.816608 -0.875975 -0.197487 -0.440076</float_array>
+          <technique_common>
+            <accessor source="#sekikaobj_small-mesh-normals-array" count="44" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="sekikaobj_small-mesh-map-channel1">
+          <float_array id="sekikaobj_small-mesh-map-channel1-array" count="192">2.32568 -0.618896 0 2.30542 0.106445 0 2.73755 -0.091064 0 2.32593 0.547607 0 3.10278 -0.385498 0 2.91772 0.703369 0 1.28931 0.14209 0 1.13525 -0.648438 0 0.732422 -0.086914 0 0.580811 -0.697021 0 0.695068 0.604736 0 0.009033 -0.220459 0 0.23584 -0.474121 0 0.857666 3.98999 0 1.32031 3.33398 0 0.748535 3.30151 0 0.043701 3.78052 0 0.01831 3.21973 0 0.241211 2.97119 0 1.54858 -0.385254 0 1.79785 0.703613 0 2.52686 1.21045 0 2.43579 1.62646 0 2.85791 1.90967 0 1.96558 2.34619 0 2.52637 2.60864 0 3.11157 1.90967 0 0.671875 -0.98999 0 1.97241 1.48584 0 1.67944 1.9126 0 4.30957 2.88086 0 4.62085 2.09033 0 3.88281 2.60449 0 1.89282 -0.87085 0 3.1748 -0.63916 0 2.32568 -0.98999 0 2.65601 1.04199 0 1.32104 1.22559 0 0.792969 1.59204 0 1.65112 2.03125 0 0.33374 0.868408 0 0.769775 1.20703 0 1.39673 0.550293 0 4.40991 1.68213 0 1.42676 0.439941 0 2.07886 2.62695 0 1.35449 2.99219 0 2.38208 3.18213 0 0.98999 2.14722 0 1.26563 3.97705 0 0.494873 2.64795 0 3.15161 2.09009 0 3.44897 2.90405 0 3.36279 1.68188 0 1.47681 -0.638916 0 3.12329 2.34277 0 0.009033 2.62256 0 2.87183 1.06055 0 3.88208 1.20483 0 1.34277 1.02734 0 3.55469 1.06055 0 1.31738 2.60425 0 1.73071 3.63525 0 5.27539 -6.59058 0</float_array>
+          <technique_common>
+            <accessor source="#sekikaobj_small-mesh-map-channel1-array" count="64" stride="3">
+              <param name="S" type="float"/>
+              <param name="T" type="float"/>
+              <param name="P" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="sekikaobj_small-mesh-vertices">
+          <input semantic="POSITION" source="#sekikaobj_small-mesh-positions"/>
+        </vertices>
+        <triangles material="lambert6" count="56">
+          <input semantic="VERTEX" source="#sekikaobj_small-mesh-vertices" offset="0"/>
+          <input semantic="NORMAL" source="#sekikaobj_small-mesh-normals" offset="1"/>
+          <input semantic="TEXCOORD" source="#sekikaobj_small-mesh-map-channel1" offset="2" set="1"/>
+          <p>17 0 25 23 1 26 24 2 55 23 3 26 17 4 25 4 5 23 19 6 24 4 5 23 17 0 25 4 7 23 19 8 24 5 9 22 20 10 29 5 9 22 19 6 24 5 9 22 20 10 29 6 11 28 15 12 19 12 13 20 13 14 44 12 15 20 15 16 19 3 17 1 7 18 0 3 17 1 15 12 19 3 17 1 7 18 0 0 19 2 16 20 4 0 19 2 7 18 0 28 21 41 21 22 42 29 23 59 21 22 42 28 21 41 10 24 10 9 25 40 10 24 10 28 21 41 10 24 10 9 25 40 16 20 11 21 26 43 22 27 53 29 28 58 22 27 53 21 22 43 20 10 32 11 29 31 20 10 32 21 22 43 20 10 32 11 29 31 6 11 30 14 30 13 13 14 14 22 27 49 13 14 14 14 30 13 2 31 15 19 6 16 2 31 15 14 30 13 2 31 15 19 6 16 17 0 17 6 11 7 18 32 9 5 33 27 18 32 9 6 11 7 1 34 8 11 29 6 1 34 8 6 11 7 7 18 0 25 35 34 16 20 4 25 35 34 7 18 0 23 36 35 24 2 33 23 1 35 7 18 0 8 37 3 9 25 5 28 21 36 9 25 5 8 37 3 0 19 2 3 38 1 0 39 2 8 40 3 10 24 10 11 29 6 21 22 42 11 29 6 10 24 10 1 34 8 12 13 38 28 21 39 27 41 48 28 21 39 12 13 38 8 37 37 20 10 32 14 30 51 22 27 53 14 30 51 20 10 32 19 6 52 23 1 26 18 32 21 25 35 57 18 32 21 23 1 26 4 42 23 1 34 8 16 20 11 25 35 12 16 20 11 1 34 8 10 24 10 15 12 50 2 31 15 26 43 18 2 31 15 15 12 50 13 14 14 3 17 1 8 37 3 12 13 20 2 31 15 17 0 17 26 43 18 4 5 23 5 9 22 18 32 21 25 35 12 18 32 9 1 34 8 16 20 4 9 25 5 0 19 2 7 18 0 15 12 19 24 2 33 27 41 47 13 14 46 12 13 45 26 43 54 24 2 33 15 12 19 17 0 17 24 2 56 26 43 18 22 27 53 27 41 60 29 23 58 27 41 48 28 21 39 29 23 61 22 27 62 13 14 46 27 41 47</p>
+        </triangles>
+      </mesh>
+    </geometry>
+  </library_geometries>
+  <library_visual_scenes>
+    <visual_scene id="sekikaobj_small.max" name="sekikaobj_small_max">
+      <node id="sekikaobj_small-node" name="sekikaobj_small" type="NODE">
+        <translate>0 0 0</translate>
+        <instance_geometry url="#sekikaobj_small-mesh">
+          <bind_material>
+            <technique_common>
+              <instance_material symbol="lambert6" target="#lambert6">
+                <bind_vertex_input semantic="CHANNEL1" input_semantic="TEXCOORD" input_set="1"/>
+              </instance_material>
+            </technique_common>
+          </bind_material>
+        </instance_geometry>
+      </node>
+      <extra>
+        <technique profile="FCOLLADA">
+          <start_time>0</start_time>
+          <end_time>3.33333</end_time>
+        </technique>
+      </extra>
+      <extra>
+        <technique profile="MAX3D">
+          <frame_rate>30</frame_rate>
+        </technique>
+      </extra>
+    </visual_scene>
+  </library_visual_scenes>
+  <scene>
+    <instance_visual_scene url="#sekikaobj_small.max"/>
+  </scene>
+</COLLADA>

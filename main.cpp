@@ -49,6 +49,14 @@ vector<Enemy> enemies;
 // Model drawn at enemy positions
 Object* enemyModel;
 
+// A Asteroid for testing
+Object* asteroid;
+
+// keep track of game status:
+bool gameOver = false;
+// end of game message:
+string message;
+
 GLuint blurShaderProgramHandle, shiftShaderProgramHandle;
 GLuint passTextureShaderProgramHandle, glowShaderProgramHandle;
 GLuint framebufferSizeLoc, fbSizeLoc, blurSizeLoc, shiftTimeLoc, passTimeLoc, passHitLoc;
@@ -265,6 +273,41 @@ void reshape( int w, int h )
     glLoadIdentity();
 }
 
+void drawText()
+{
+    glDisable( GL_TEXTURE_2D );
+    // START drawing of Bit map text for Fps display
+    glMatrixMode( GL_PROJECTION );
+    //glClear( GL_DEPTH_BUFFER_BIT);
+  
+  glPushMatrix();
+  {
+    glLoadIdentity();
+
+    gluOrtho2D( 0, window.getWidth(), 0, window.getHeight() );
+    glMatrixMode( GL_MODELVIEW );
+    glLoadIdentity();
+    
+    float messageH = 10.0f;
+    
+    for( int i = 0; i < message.length(); i++ ) {
+        if( gameOver ) {
+            glColor4f( 0, 1, 0, 1 );
+            message = "YOU WON!!! Press 'q' to quit";
+            messageH = (window.getHeight()/4);
+        } else {
+            glColor4f( 1, 1, 1, 1 );
+        }
+        glRasterPos2f( (i * 12) + (window.getWidth()-(message.length()*12 + 10)), messageH );
+        glutBitmapCharacter( GLUT_BITMAP_HELVETICA_18, message.at(i) );
+    }
+    glMatrixMode( GL_PROJECTION );
+  };
+  glPopMatrix();
+
+  glMatrixMode( GL_MODELVIEW );
+}
+
 // Draws objects that should glow (just the lasers when finished)
 void drawGlowObjs() {
   // just a cube for testing
@@ -359,11 +402,19 @@ void display() {
     glUniform1i(passHitLoc, shakeCount); // if > 0, shakes the ship left/right
     glBindTexture( GL_TEXTURE_2D, *textures.at("x-wing") );
     glPushMatrix(); {
-      glTranslatef(shipX, shipY, 0);
-      glScalef(0.1, 0.1, 0.1);
+      glTranslatef( shipX, shipY, 0 );
+      glScalef( 0.1, 0.1, 0.1 );
       ship->draw();
     } glPopMatrix();
-	
+
+    glBindTexture( GL_TEXTURE_2D, 0 );
+    glBindTexture( GL_TEXTURE_2D, *textures.at("asteroid") );
+    glPushMatrix(); {
+      glTranslatef(0, 10, 0);
+      glScalef(0.5, 0.5, 0.5);
+      asteroid->draw();
+    } glPopMatrix();
+
 	// position the spot light and direction
 	float spotlightPosition[4] = { 0.0, 2.15, 0.0, 1.0 };
 	glLightfv( GL_LIGHT1, GL_POSITION, spotlightPosition );
@@ -425,6 +476,8 @@ void cleanup() {
     delete mouse;
     delete skyBox;
     delete ship;
+    delete enemyModel;
+    delete asteroid;
 }
 
 // Runs on key down
@@ -562,10 +615,15 @@ void registerTextures() {
     registerSOILTexture("./models/Ship/X-Wing/all_fly_xwing.png", *textures.at("x-wing"));
     printf("[INFO]: X-Wing texture read in and registered\n");
 
-    // losf the tie fighter texture
+    // load the tie fighter texture
     textures.add("tiefighter");
     registerSOILTexture("./models/Enemy/tie_fighter/imp_fly_tiefighter.png", *textures.at("tiefighter"));
     printf("[INFO]: TIE Fighter texture read in and registered\n");
+
+    // load the asteroid texture
+    textures.add("asteroid");
+    registerSOILTexture("./models/Rocks/large/Textures/enemy_rock2_s3tc.png", *textures.at("asteroid"));
+    printf("[INFO]: Asteroid texture read in and registered\n");
     //////////////////////////////////////////////////////////////////////////////////////////
 }
 
@@ -578,6 +636,7 @@ int main( int argc, char *argv[] ) {
     ship = new Object( "./models/Ship/X-Wing/X-Wing.obj" );
     shipX = shipY = 0;
     enemyModel = new Object("./models/Enemy/tie_fighter/imp_fly_tiefighter.obj");
+    asteroid = new Object("./models/Rocks/large/Large Rock.obj");
     
     /* initialize GLEW */
     GLenum glewResult = glewInit();
