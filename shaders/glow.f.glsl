@@ -12,7 +12,9 @@ void main() {
     float glowSize = 5; // the side of pixel window we will glow over
     // this will be set to the final pixel color after the blur is applied
     vec4 finalColor = vec4(0.0, 0.0, 0.0, 0.0);
-
+	
+	vec2 texel = (gl_TexCoord[0].st);
+	vec4 original = texture2D( tex, texel);
     // centered around some s, go glowSize steps left and right (pixel rows)
     for( float i = -glowSize; i <= glowSize; i += 1.0 ) {
         // centered around t, go glowSize steps up and down (pixel columns)
@@ -29,7 +31,7 @@ void main() {
     finalColor *= (1.0 / (blurDim*blurDim));
 
     // glow
-    finalColor = (finalColor * 0.5) + 0.5;
+    finalColor = (finalColor * 1.0) + original;
 
     // we need to make certain that all our values are between 0 and 1
     gl_FragColor = clamp( finalColor, 0.0, 1.0 ); 

@@ -368,10 +368,10 @@ void display() {
 
         glBindTexture( GL_TEXTURE_2D, fboTexHandle );
 
-        glUseProgram( blurShaderProgramHandle ); 
+        glUseProgram( glowShaderProgramHandle ); 
         // Pass the framebuffersize and the blursize to the shader
-        glUniform1f( framebufferSizeLoc, (float)framebufferWidth );
-        glUniform1f( blurSizeLoc, BLUR_SIZE );
+        glUniform1f( fbSizeLoc, (float)framebufferWidth );
+        //glUniform1f( blurSizeLoc, BLUR_SIZE );
         
         glBegin( GL_QUADS ); {
             glTexCoord2f( 0,0 ); glVertex2f( -1,-1 );
