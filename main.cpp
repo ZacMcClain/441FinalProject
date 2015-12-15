@@ -463,12 +463,6 @@ void display() {
     } glPopMatrix();
 
     glBindTexture( GL_TEXTURE_2D, 0 );
-    glBindTexture( GL_TEXTURE_2D, *textures.at("asteroid") );
-    glPushMatrix(); {
-      glTranslatef(0, 10, 0);
-      glScalef(0.5, 0.5, 0.5);
-      asteroid->draw();
-    } glPopMatrix();
 
 	// position the spot light and direction
 	float spotlightPosition[4] = { shipX, 21.5*shipScale + shipY, 0.0, 1.0 };
@@ -477,12 +471,19 @@ void display() {
 	glLightfv( GL_LIGHT1, GL_SPOT_DIRECTION, spotlightDirection );
 
     // Draw tie fighter at each enemy position
-    glBindTexture( GL_TEXTURE_2D, *textures.at("tiefighter"));
     for (int i = 0; i < enemies.size(); i++) {
         glPushMatrix(); {
             glTranslatef(enemies[i].getX(), enemies[i].getY(), enemies[i].getZ()); 
             enemies[i].callRotate();
-            enemyModel->draw();        
+            if( enemies[i].type == Enemy::Type::SHIP ){
+                glBindTexture( GL_TEXTURE_2D, *textures.at("tiefighter"));
+                enemyModel->draw();
+            } else {          
+                glBindTexture( GL_TEXTURE_2D, *textures.at("asteroid") );
+                glScalef(0.5, 0.5, 0.5);
+                asteroid->draw();
+            }
+            glBindTexture( GL_TEXTURE_2D, 0 );
         } glPopMatrix(); 
     }
 
@@ -628,7 +629,10 @@ void update( int value ) {
         // generate random position right behind the skybox
         int x = rand() % 100 - 50;
         int y = rand() % 100 - 50;
-        enemies.push_back(Enemy(x,y,300, shipX, shipY));
+        Enemy e( x,y,300, shipX, shipY );
+        int tp = rand() % 2;
+        e.type = ( tp == 0 ) ? Enemy::Type::SHIP : Enemy::Type::ROCK;
+        enemies.push_back( e );
     }
 
     // Move enemies towards the ship

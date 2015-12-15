@@ -14,6 +14,9 @@
 
 class Enemy {
 public:
+    enum Type { SHIP, ROCK };
+    Type type;
+
     Enemy(float x, float y, float z, float shipX, float shipY);
 
     // Moves towards the target
