@@ -138,7 +138,7 @@ void mouseMotion( int x, int y ) {
 void init( const char *filename, const char *animfile )
 {
     /* Initialize OpenGL context */
-    glClearColor( 1, 1, 1, 0.1 );
+    glClearColor( 1, 1, 1, 0.0 );
     
     //tell OpenGL not to use the material system; just use whatever we pass with glColor()
     glEnable( GL_COLOR_MATERIAL );
@@ -262,8 +262,12 @@ void reshape( int w, int h )
 // Draws objects that should glow (just the lasers when finished)
 void drawGlowObjs() {
   // just a cube for testing
+  glDisable(GL_TEXTURE_2D);
   glColor4f(0, 1, 0, 1);
-  glutSolidCube(10);
+  glPushMatrix(); {
+    glTranslatef(0, 10, 0);
+    glutSolidCube(5);
+  } glPopMatrix();
 }
 
 void display() {
@@ -289,7 +293,7 @@ void display() {
             cam->lookAt();
             
             // enable a default light for the scene;
-            float lPosition[4] = { 100, 100, 100, 1 };
+            float lPosition[4] = { 100, 1000, 100, 1 };
             glLightfv( GL_LIGHT0, GL_POSITION, lPosition );
             
             glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
@@ -313,6 +317,7 @@ void display() {
     // And now render the ship...
     glPushMatrix(); {
       glScalef(0.1, 0.1, 0.1);
+      glBindTexture( GL_TEXTURE_2D, *textures.at("x-wing") );
       ship->draw();
     } glPopMatrix();
 
@@ -330,7 +335,7 @@ void display() {
         glDisable( GL_LIGHTING );
         glDisable( GL_DEPTH_TEST );
 
-        glEnable( GL_TEXTURE_2D );
+        //glEnable(GL_TEXTURE_2D);
         glBindTexture( GL_TEXTURE_2D, fboTexHandle );
 
         glUseProgram( blurShaderProgramHandle ); 
@@ -419,6 +424,11 @@ void registerTextures() {
     registerSOILTexture( "textures/skybox/stars_bk.jpg", skyBox->handles[5] );   printf( "." ); fflush( stdout );
     
     printf( "skybox textures read in and registered!\n" );
+
+    // load the x wing texture
+    textures.add("x-wing");
+    registerSOILTexture("./models/Ship/X-Wing/all_fly_xwing.png", *textures.at("x-wing"));
+    printf("[INFO]: X-Wing texture read in and registered\n");
     //////////////////////////////////////////////////////////////////////////////////////////
 }
 
