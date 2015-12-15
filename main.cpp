@@ -37,15 +37,16 @@ Window window; // keeps take of our window stuff
 Textures textures; // a container for out textures
 Object* ship; // our ship model object
 
-bool DISPLAY_WIREFRAME = false; // not used but we could if we want to.
+// One enemy for testing
+Object* enemy;
 
-GLuint blurShaderProgramHandle; // our blur shader
-GLuint framebufferSizeLoc, blurSizeLoc; // info we pass into our blur shader
-GLfloat BLUR_SIZE = 1; // how much blur we want
+GLuint blurShaderProgramHandle, shiftShaderProgramHandle, passTextureShaderProgramHandle;
+GLuint framebufferSizeLoc, blurSizeLoc, timeLoc;
+GLfloat BLUR_SIZE = 1;
 
-GLuint framebufferHandle; // the frame buffer handle for multi pass rendering
-GLuint renderbufferHandle; // needed to render to the frame buffer
-GLuint framebufferWidth, framebufferHeight; // these get set in our init() function.
+GLuint framebufferHandle;
+GLuint renderbufferHandle;
+GLuint framebufferWidth, framebufferHeight;
 
 GLuint fboTexHandle; // this is a handle to the texture that we will render our FBO to
 
@@ -134,8 +135,9 @@ void init( const char *filename, const char *animfile )
     
     float lightCol[4] = { 1,1,1,1 };
     float ambientCol[4] = { 0.1,0.1,0.1,1.0 };
-    glLightfv( GL_LIGHT0,GL_DIFFUSE,lightCol );
+    glLightfv( GL_LIGHT0, GL_DIFFUSE, lightCol );
     glLightfv( GL_LIGHT0, GL_AMBIENT, ambientCol );
+    glLightf( GL_LIGHT0, GL_CONSTANT_ATTENUATION, 1.5 );
     glEnable( GL_LIGHTING );
     glEnable( GL_LIGHT0 );
     
@@ -254,6 +256,36 @@ void drawGlowObjs() {
     glTranslatef(0, 10, 0);
     glutSolidCube(5);
   } glPopMatrix();
+  
+  glPushMatrix();
+    glDisable(GL_LIGHTING);
+    glEnable(GL_LINE_SMOOTH);
+	glLineWidth( 5 );
+	glTranslatef(5.0, 2.15, 0.0);
+	// glRotate with ship direction
+	glBegin(GL_LINES);
+	glColor3f(1.0f, 0.0f, 0.0f);
+	  glVertex3f(0, 0, 0);
+	  glVertex3f(0, 0, 10);
+	glEnd();
+  
+  glEnable(GL_LIGHTING);
+  glPopMatrix();
+  
+    glPushMatrix();
+    glDisable(GL_LIGHTING);
+    glEnable(GL_LINE_SMOOTH);
+	glLineWidth( 5 );
+	glTranslatef(-5.0, 2.15, 0.0);
+	// glRotate with ship direction
+	glBegin(GL_LINES);
+	glColor3f(1.0f, 0.0f, 0.0f);
+	  glVertex3f(0, 0, 0);
+	  glVertex3f(0, 0, 10);
+	glEnd();
+  
+  glEnable(GL_LIGHTING);
+  glPopMatrix();
 }
 
 void display() {
@@ -296,15 +328,27 @@ void display() {
     // Clear the screen now
     glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
     
-    // Render the background
+    // Render the background with the "shifting texture" shader
+    glUseProgram(shiftShaderProgramHandle);
+    glUniform1f(timeLoc, (float)curent_time);
     glLoadIdentity();
     cam->lookAt();
     skyBox->drawSkybox( 300 );
+
     // And now render the ship...
+    glUseProgram(passTextureShaderProgramHandle);
     glPushMatrix(); {
       glScalef(0.1, 0.1, 0.1);
+      //glEnable(GL_TEXTURE_2D);
       glBindTexture( GL_TEXTURE_2D, *textures.at("x-wing") );
       ship->draw();
+    } glPopMatrix();
+
+    // TESTING enemy object
+    glPushMatrix(); {
+      glTranslatef(0, -15, 0);
+      glBindTexture( GL_TEXTURE_2D, *textures.at("tiefighter"));
+      enemy->draw();
     } glPopMatrix();
 
     // Then render the framebuffer contents as a textured 2d quad
@@ -321,7 +365,6 @@ void display() {
         glDisable( GL_LIGHTING );
         glDisable( GL_DEPTH_TEST );
 
-        //glEnable(GL_TEXTURE_2D);
         glBindTexture( GL_TEXTURE_2D, fboTexHandle );
 
         glUseProgram( blurShaderProgramHandle ); 
@@ -415,21 +458,22 @@ void registerTextures() {
     textures.add("x-wing");
     registerSOILTexture("./models/Ship/X-Wing/all_fly_xwing.png", *textures.at("x-wing"));
     printf("[INFO]: X-Wing texture read in and registered\n");
+
+    // losf the tie fighter texture
+    textures.add("tiefighter");
+    registerSOILTexture("./models/Enemy/tie_fighter/imp_fly_tiefighter.png", *textures.at("tiefighter"));
+    printf("[INFO]: TIE Fighter texture read in and registered\n");
     //////////////////////////////////////////////////////////////////////////////////////////
 }
 
 int main( int argc, char *argv[] ) {
-    // if (argc < 1) {
-    //     fprintf (stderr, "usage: %s <config file> \n", argv[0]);
-    //     return 0;
-    // }
-    
     glutInit( &argc, argv );
     glutInitDisplayMode( GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH );
     glutInitWindowSize( window.getWidth(), window.getHeight() );
     glutCreateWindow( "keyToTheKingdom" );
 
     ship = new Object( "./models/Ship/X-Wing/X-Wing.obj" );
+    enemy = new Object("./models/Enemy/tie_fighter/imp_fly_tiefighter.obj");
     
     /* initialize GLEW */
     GLenum glewResult = glewInit();
@@ -458,6 +502,12 @@ int main( int argc, char *argv[] ) {
     blurShaderProgramHandle = createShaderProgram( "shaders/blur.v.glsl", "shaders/blur.f.glsl", "Blur Shader Program" );
     framebufferSizeLoc = glGetUniformLocation( blurShaderProgramHandle, "framebufferSize" );
     blurSizeLoc = glGetUniformLocation( blurShaderProgramHandle, "blurSize" );
+
+    shiftShaderProgramHandle = createShaderProgram("shaders/shift.v.glsl", "shaders/shift.f.glsl", "Shift Shader Program");
+    timeLoc = glGetUniformLocation( shiftShaderProgramHandle, "time" );
+
+    // This one fixes our x-wing texturing problems.  Its just a pass through.
+    passTextureShaderProgramHandle = createShaderProgram("shaders/pass.v.glsl", "shaders/pass.f.glsl", "Pass Texture Program");
     
     glutReshapeFunc( reshape );
     glutDisplayFunc( display );
