@@ -37,6 +37,9 @@ Window window;
 Textures textures;
 Object* ship;
 
+// One enemy for testing
+Object* enemy;
+
 // int windowWidth = 512, windowHeight = 512;  // window dimensions 
 // GLint leftMouseButton, rightMouseButton;    // status of the mouse buttons
 // int mouseX = 0, mouseY = 0;                 // last known X and Y of the mouse
@@ -317,14 +320,21 @@ void display() {
     glLoadIdentity();
     cam->lookAt();
     skyBox->drawSkybox( 300 );
+
     // And now render the ship...
     glUseProgram(passTextureShaderProgramHandle);
     glPushMatrix(); {
       glScalef(0.1, 0.1, 0.1);
-      glEnable(GL_TEXTURE_2D);
-      //TODO: this doesn't texture for some reason.
+      //glEnable(GL_TEXTURE_2D);
       glBindTexture( GL_TEXTURE_2D, *textures.at("x-wing") );
       ship->draw();
+    } glPopMatrix();
+
+    // TESTING enemy object
+    glPushMatrix(); {
+      glTranslatef(0, -15, 0);
+      glBindTexture( GL_TEXTURE_2D, *textures.at("tiefighter"));
+      enemy->draw();
     } glPopMatrix();
 
     // Then render the framebuffer contents as a textured 2d quad
@@ -434,6 +444,11 @@ void registerTextures() {
     textures.add("x-wing");
     registerSOILTexture("./models/Ship/X-Wing/all_fly_xwing.png", *textures.at("x-wing"));
     printf("[INFO]: X-Wing texture read in and registered\n");
+
+    // losf the tie fighter texture
+    textures.add("tiefighter");
+    registerSOILTexture("./models/Enemy/tie_fighter/imp_fly_tiefighter.png", *textures.at("tiefighter"));
+    printf("[INFO]: TIE Fighter texture read in and registered\n");
     //////////////////////////////////////////////////////////////////////////////////////////
 }
 
@@ -444,6 +459,7 @@ int main( int argc, char *argv[] ) {
     glutCreateWindow( "keyToTheKingdom" );
 
     ship = new Object( "./models/Ship/X-Wing/X-Wing.obj" );
+    enemy = new Object("./models/Enemy/tie_fighter/imp_fly_tiefighter.obj");
     
     /* initialize GLEW */
     GLenum glewResult = glewInit();
