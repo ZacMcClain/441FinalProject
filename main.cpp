@@ -39,6 +39,7 @@ Textures textures; // a container for out textures
 
 Object* ship; // our ship model object
 float shipX, shipY; // Target for the ship to move to (in the screen plane)
+int shakeCount; // number of frames to shake when ship hit.  Shaking done in vertex shader.
 
 // keys pressed boolean array
 bool keysPressed['z' - 'a'] = { false };
@@ -50,7 +51,7 @@ Object* enemyModel;
 
 GLuint blurShaderProgramHandle, shiftShaderProgramHandle;
 GLuint passTextureShaderProgramHandle, glowShaderProgramHandle;
-GLuint framebufferSizeLoc, fbSizeLoc, blurSizeLoc, timeLoc;
+GLuint framebufferSizeLoc, fbSizeLoc, blurSizeLoc, shiftTimeLoc, passTimeLoc, passHitLoc;
 GLfloat BLUR_SIZE = 1;
 
 GLuint framebufferHandle;
@@ -224,8 +225,8 @@ void init( const char *filename, const char *animfile )
 
     glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR ); // liner min filter
     glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR ); // liner max filter 
-    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE ); // clamp s to the edge
-    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE ); // clamp t to the edge
+    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT ); // clamp s to the edge
+    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT ); // clamp t to the edge
     glTexEnvi( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
 
 
@@ -347,13 +348,15 @@ void display() {
     
     // Render the background with the "shifting texture" shader
     glUseProgram(shiftShaderProgramHandle);
-    glUniform1f(timeLoc, (float)curent_time);
+    glUniform1f(shiftTimeLoc, (float)curent_time);
     glLoadIdentity();
     cam->lookAt();
     skyBox->drawSkybox( 300 );
 
     // And now render the ship...
     glUseProgram(passTextureShaderProgramHandle);
+    glUniform1f(passTimeLoc, (float)curent_time);
+    glUniform1i(passHitLoc, shakeCount); // if > 0, shakes the ship left/right
     glBindTexture( GL_TEXTURE_2D, *textures.at("x-wing") );
     glPushMatrix(); {
       glTranslatef(shipX, shipY, 0);
@@ -445,6 +448,9 @@ void keyboard( unsigned char key, int x, int y )
         keysPressed['d' - 'a'] = true;
     } else if( key == 's' || key == 'S' ) {
         keysPressed['s' - 'a'] = true;
+    } else if( key == '1' ) {
+        // TESTING THE SHAKES
+        shakeCount = 60;
     }
 }
 
@@ -471,6 +477,8 @@ void keyboardUp( unsigned char key, int x, int y )
 //  be redrawn. yes, I said "needs be."
 //
 void update( int value ) {
+    // Decrease the ship shake count
+    if (shakeCount > 0) shakeCount --;
     // Move ship to edge gradually if key pressed
     float delta = 0.3;
     // Clamping values (could get the real ones from the projection somehow. Meh)
@@ -602,12 +610,13 @@ int main( int argc, char *argv[] ) {
     glowShaderProgramHandle = createShaderProgram( "shaders/glow.v.glsl", "shaders/glow.f.glsl", "Glow Shader Program" );
     fbSizeLoc = glGetUniformLocation( glowShaderProgramHandle, "fbSize" );
 
-
     shiftShaderProgramHandle = createShaderProgram("shaders/shift.v.glsl", "shaders/shift.f.glsl", "Shift Shader Program");
-    timeLoc = glGetUniformLocation( shiftShaderProgramHandle, "time" );
+    shiftTimeLoc = glGetUniformLocation( shiftShaderProgramHandle, "time" );
 
-    // This one fixes our x-wing texturing problems.  Its just a pass through.
+    // This one fixes our x-wing texturing problems.  Its just a pass through, but can shake the ship when its hit
     passTextureShaderProgramHandle = createShaderProgram("shaders/pass.v.glsl", "shaders/pass.f.glsl", "Pass Texture Program");
+    passTimeLoc = glGetUniformLocation( passTextureShaderProgramHandle, "time" );
+    passHitLoc = glGetUniformLocation( passTextureShaderProgramHandle, "hit" );
     
     glutReshapeFunc( reshape );
     glutDisplayFunc( display );
