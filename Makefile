@@ -42,6 +42,7 @@ OBJECTS = main.o \
 		  src/SkyBox.o \
 		  src/Mouse.o \
 		  src/Window.o \
+		  src/Enemy.o \
 
 LOCAL_INC_PATH = ../CSCI441GFx/include
 LOCAL_LIB_PATH = ../CSCI441GFx/lib

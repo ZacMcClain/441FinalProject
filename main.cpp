@@ -25,6 +25,7 @@
 #include "SkyBox.h"
 #include "Textures.h"
 #include "Object.h"
+#include "Enemy.h"
 
 using namespace std;
 
@@ -37,13 +38,15 @@ Window window; // keeps take of our window stuff
 Textures textures; // a container for out textures
 
 Object* ship; // our ship model object
-float shipX, shipY; // Target for the ship to move to (follows mouse)
+float shipX, shipY; // Target for the ship to move to (in the screen plane)
 
 // keys pressed boolean array
 bool keysPressed['z' - 'a'] = { false };
 
-// One enemy for testing
-Object* enemy;
+// Vector of current enemy positions
+vector<Enemy> enemies;
+// Model drawn at enemy positions
+Object* enemyModel;
 
 GLuint blurShaderProgramHandle, shiftShaderProgramHandle;
 GLuint passTextureShaderProgramHandle, glowShaderProgramHandle;
@@ -364,12 +367,15 @@ void display() {
 	GLfloat spotlightDirection[4] = { 0.0, 0.0, 1.0, 0.0};
 	glLightfv( GL_LIGHT1, GL_SPOT_DIRECTION, spotlightDirection );
 
-    // TESTING enemy object
-    glPushMatrix(); {
-      glTranslatef(0, -15, 0);
-      glBindTexture( GL_TEXTURE_2D, *textures.at("tiefighter"));
-      enemy->draw();
-    } glPopMatrix();
+    // Draw tie fighter at each enemy position
+    glBindTexture( GL_TEXTURE_2D, *textures.at("tiefighter"));
+    for (int i = 0; i < enemies.size(); i++) {
+        glPushMatrix(); {
+            glTranslatef(enemies[i].getX(), enemies[i].getY(), enemies[i].getZ()); 
+            enemies[i].callRotate();
+            enemyModel->draw();        
+        } glPopMatrix(); 
+    }
 
     // Then render the framebuffer contents as a textured 2d quad
     // on top of the scene with the glow shader
@@ -488,6 +494,28 @@ void update( int value ) {
         shipX = fmax(minX, fmin(shipX, maxX));
     }
 
+    // Chance to spawn new enemy
+    int r = rand() % 100;
+    if (r < 1) {
+        // generate random position right behind the skybox
+        int x = rand() % 100 - 50;
+        int y = rand() % 100 - 50;
+        enemies.push_back(Enemy(x,y,300, shipX, shipY));
+    }
+
+    // Move enemies towards the ship
+    for (int i = 0; i < enemies.size(); i++) {
+        enemies[i].move();
+    }
+
+    // Remove enemies that pass the plane
+    for (int i = 0; i < enemies.size(); i++) {
+        if (enemies[i].getZ() < -10) {
+            enemies.erase(enemies.begin() + i);
+            i--;
+        }
+    }
+
     glutPostRedisplay();
     
     glutTimerFunc( (unsigned int)(1000.0 / 60.0), update, 0 );
@@ -539,7 +567,7 @@ int main( int argc, char *argv[] ) {
 
     ship = new Object( "./models/Ship/X-Wing/X-Wing.obj" );
     shipX = shipY = 0;
-    enemy = new Object("./models/Enemy/tie_fighter/imp_fly_tiefighter.obj");
+    enemyModel = new Object("./models/Enemy/tie_fighter/imp_fly_tiefighter.obj");
     
     /* initialize GLEW */
     GLenum glewResult = glewInit();
