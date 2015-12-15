@@ -62,6 +62,8 @@ string message;
 // keeping track of the score.
 int score = 0;
 
+const float M_PI = 3.14159265;
+
 GLuint blurShaderProgramHandle, shiftShaderProgramHandle;
 GLuint passTextureShaderProgramHandle, glowShaderProgramHandle;
 GLuint framebufferSizeLoc, fbSizeLoc, blurSizeLoc, shiftTimeLoc, passTimeLoc, passHitLoc;
