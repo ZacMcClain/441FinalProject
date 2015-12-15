@@ -134,13 +134,21 @@ void init( const char *filename, const char *animfile )
     glEnable( GL_COLOR_MATERIAL );
     glColorMaterial( GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE );
     
+	glEnable( GL_LIGHTING );
+	glEnable( GL_LIGHT0 );
     float lightCol[4] = { 1,1,1,1 };
     float ambientCol[4] = { 0.1,0.1,0.1,1.0 };
     glLightfv( GL_LIGHT0, GL_DIFFUSE, lightCol );
     glLightfv( GL_LIGHT0, GL_AMBIENT, ambientCol );
     glLightf( GL_LIGHT0, GL_CONSTANT_ATTENUATION, 1.5 );
-    glEnable( GL_LIGHTING );
-    glEnable( GL_LIGHT0 );
+	
+	glEnable( GL_LIGHT1 );
+	float spotlightCol[4] = { 1,1,1,1 };
+	float spotambientCol[4] = { 1.0,1.0,1.0,1.0 };
+    glLightfv( GL_LIGHT1, GL_DIFFUSE, spotlightCol );
+    glLightfv( GL_LIGHT1, GL_AMBIENT, ambientCol );
+    glLightf( GL_LIGHT1, GL_SPOT_CUTOFF, 50.0 );
+	glLightf( GL_LIGHT1, GL_SPOT_EXPONENT, 100 );
     
     glDisable( GL_CULL_FACE );
     glEnable( GL_NORMALIZE );
@@ -251,11 +259,12 @@ void reshape( int w, int h )
 // Draws objects that should glow (just the lasers when finished)
 void drawGlowObjs() {
   // just a cube for testing
+  double curent_time =  (double)glutGet(GLUT_ELAPSED_TIME) / 1000.0;
   glDisable(GL_TEXTURE_2D);
   glColor4f(0, 1, 0, 1);
   glPushMatrix(); {
-    glTranslatef(0, 10, 0);
-    glutSolidCube(5);
+    glTranslatef(sin(curent_time)*5, cos(curent_time)*3 + 2.15, 20);
+    glutSolidCube(3);
   } glPopMatrix();
   
   glPushMatrix();
@@ -272,7 +281,6 @@ void drawGlowObjs() {
   
   glEnable(GL_LIGHTING);
   glPopMatrix();
-  
     glPushMatrix();
     glDisable(GL_LIGHTING);
     glEnable(GL_LINE_SMOOTH);
@@ -344,6 +352,12 @@ void display() {
       glBindTexture( GL_TEXTURE_2D, *textures.at("x-wing") );
       ship->draw();
     } glPopMatrix();
+	
+	// position the spot light and direction
+	float spotlightPosition[4] = { 0.0, 2.15, 0.0, 1.0 };
+	glLightfv( GL_LIGHT1, GL_POSITION, spotlightPosition );
+	GLfloat spotlightDirection[4] = { 0.0, 0.0, 1.0, 0.0};
+	glLightfv( GL_LIGHT1, GL_SPOT_DIRECTION, spotlightDirection );
 
     // TESTING enemy object
     glPushMatrix(); {
