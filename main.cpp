@@ -40,8 +40,9 @@ Object* ship; // our ship model object
 // One enemy for testing
 Object* enemy;
 
-GLuint blurShaderProgramHandle, shiftShaderProgramHandle, passTextureShaderProgramHandle;
-GLuint framebufferSizeLoc, blurSizeLoc, timeLoc;
+GLuint blurShaderProgramHandle, shiftShaderProgramHandle;
+GLuint passTextureShaderProgramHandle, glowShaderProgramHandle;
+GLuint framebufferSizeLoc, fbSizeLoc, blurSizeLoc, timeLoc;
 GLfloat BLUR_SIZE = 1;
 
 GLuint framebufferHandle;
@@ -326,7 +327,7 @@ void display() {
     // Unbind framebuffer
     glBindFramebuffer( GL_FRAMEBUFFER, 0 );
     // Clear the screen now
-    glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
     
     // Render the background with the "shifting texture" shader
     glUseProgram(shiftShaderProgramHandle);
@@ -369,8 +370,8 @@ void display() {
 
         glUseProgram( blurShaderProgramHandle ); 
         // Pass the framebuffersize and the blursize to the shader
-        glUniform1f(framebufferSizeLoc, (float)framebufferWidth);
-        glUniform1f(blurSizeLoc, BLUR_SIZE);
+        glUniform1f( framebufferSizeLoc, (float)framebufferWidth );
+        glUniform1f( blurSizeLoc, BLUR_SIZE );
         
         glBegin( GL_QUADS ); {
             glTexCoord2f( 0,0 ); glVertex2f( -1,-1 );
@@ -393,10 +394,9 @@ void display() {
 
 void cleanup() {
     // free memory
-    // delete mouse;
-    // delete cam;
-    // delete skyBox;
-    // delete ship;
+    delete mouse;
+    delete skyBox;
+    delete ship;
 }
 
 void keyboard( unsigned char key, int x, int y )
@@ -500,8 +500,12 @@ int main( int argc, char *argv[] ) {
     registerTextures();
     
     blurShaderProgramHandle = createShaderProgram( "shaders/blur.v.glsl", "shaders/blur.f.glsl", "Blur Shader Program" );
-    framebufferSizeLoc = glGetUniformLocation( blurShaderProgramHandle, "framebufferSize" );
+    framebufferSizeLoc = glGetUniformLocation( blurShaderProgramHandle, "fbSize" );
     blurSizeLoc = glGetUniformLocation( blurShaderProgramHandle, "blurSize" );
+
+    glowShaderProgramHandle = createShaderProgram( "shaders/glow.v.glsl", "shaders/glow.f.glsl", "Glow Shader Program" );
+    fbSizeLoc = glGetUniformLocation( glowShaderProgramHandle, "fbSize" );
+
 
     shiftShaderProgramHandle = createShaderProgram("shaders/shift.v.glsl", "shaders/shift.f.glsl", "Shift Shader Program");
     timeLoc = glGetUniformLocation( shiftShaderProgramHandle, "time" );

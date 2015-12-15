@@ -1,5 +1,5 @@
 /*
- *   Glow Fragment Shader (Not Working yet)
+ *   Glow Fragment Shader (kinda Working)
  */
 
 #version 120
@@ -7,16 +7,16 @@
 uniform sampler2D tex; // our frame buffer tex
 
 uniform float fbSize;  // the size of the frame buffer
-uniform float blurSize; // the side of pixel window we will blur over
 
 void main() {
+    float glowSize = 5; // the side of pixel window we will glow over
     // this will be set to the final pixel color after the blur is applied
     vec4 finalColor = vec4(0.0, 0.0, 0.0, 0.0);
 
-    // centered around some s, go blurSize steps left and right (pixel rows)
-    for( float i = -blurSize; i <= blurSize; i += 1.0 ) {
-        // centered around t, go blurSize steps up and down (pixel columns)
-        for( float j = -blurSize; j <= blurSize; j += 1.0 ) {
+    // centered around some s, go glowSize steps left and right (pixel rows)
+    for( float i = -glowSize; i <= glowSize; i += 1.0 ) {
+        // centered around t, go glowSize steps up and down (pixel columns)
+        for( float j = -glowSize; j <= glowSize; j += 1.0 ) {
             // take a texel offset from the fragment tex and add it to our running total
             // this will normalize the blur window position
             finalColor += texture2D( tex, gl_TexCoord[0].st + (vec2(i, j) / fbSize) ); 
@@ -24,7 +24,7 @@ void main() {
     }
 
     // calc the blur dimension
-    float blurDim = (blurSize * 2.0) + 1.0;
+    float blurDim = (glowSize * 2.0) + 1.0;
     // average the colors by the number of samples we took
     finalColor *= (1.0 / (blurDim*blurDim));
 
