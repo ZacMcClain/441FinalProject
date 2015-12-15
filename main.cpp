@@ -30,39 +30,27 @@ using namespace std;
 
 // GLOBAL VARIABLES ////////////////////////////////////////////////////////////
 
-Mouse* mouse;
-ArcballCamera* cam;
-SkyBox* skyBox;
-Window window;
-Textures textures;
-Object* ship;
+Mouse* mouse; // keeps track of our mouse stuff
+ArcballCamera* cam; // our camera model
+SkyBox* skyBox; // our background sky box
+Window window; // keeps take of our window stuff
+Textures textures; // a container for out textures
+Object* ship; // our ship model object
 
-// int windowWidth = 512, windowHeight = 512;  // window dimensions 
-// GLint leftMouseButton, rightMouseButton;    // status of the mouse buttons
-// int mouseX = 0, mouseY = 0;                 // last known X and Y of the mouse
+bool DISPLAY_WIREFRAME = false; // not used but we could if we want to.
 
-// Point cameraTPR;                            // spherical coordinates of camera mapped XYZ - TPR (theta phi radius)
-// Point cameraLookAt;                         // cpoint camera is looking at
+GLuint blurShaderProgramHandle; // our blur shader
+GLuint framebufferSizeLoc, blurSizeLoc; // info we pass into our blur shader
+GLfloat BLUR_SIZE = 1; // how much blur we want
 
-// GLuint groundTexHandle;                     // a handle to the textures in our OpenGL context
-// GLuint skyboxHandles[6];                    // all of our skybox handles
+GLuint framebufferHandle; // the frame buffer handle for multi pass rendering
+GLuint renderbufferHandle; // needed to render to the frame buffer
+GLuint framebufferWidth, framebufferHeight; // these get set in our init() function.
 
-bool DISPLAY_WIREFRAME = false;
-
-GLuint blurShaderProgramHandle;
-GLuint framebufferSizeLoc, blurSizeLoc;
-GLfloat BLUR_SIZE = 1;
-
-GLuint framebufferHandle;
-GLuint renderbufferHandle;
-GLuint framebufferWidth, framebufferHeight; // set these to the desired size
-
-GLuint fboTexHandle;
-
+GLuint fboTexHandle; // this is a handle to the texture that we will render our FBO to
 
 // END GLOBAL VARIABLES ///////////////////////////////////////////////////////
 
-//
 //  void resizeWindow(int w, int h)
 //
 //      We will register this function as GLUT's reshape callback.
@@ -163,10 +151,8 @@ void init( const char *filename, const char *animfile )
     
     mouse = new Mouse();
     skyBox = new SkyBox();
-    // init our camera a pretty starting point
+    // init our camera to a nice starting point
     cam = new ArcballCamera( 35.0f, 0.0f, 90.0f );
-    // cameraTPR = Point( 2.0, 1.57, 200.0 );
-    // cameraLookAt = Point( 0,0,0 );
     
     glEnable( GL_BLEND );
     glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
@@ -221,7 +207,7 @@ void init( const char *filename, const char *animfile )
     glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR ); // liner max filter 
     glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE ); // clamp s to the edge
     glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE ); // clamp t to the edge
-    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+    glTexEnvi( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
 
 
     // Attach the texture to the framebuffer
