@@ -35,7 +35,12 @@ ArcballCamera* cam; // our camera model
 SkyBox* skyBox; // our background sky box
 Window window; // keeps take of our window stuff
 Textures textures; // a container for out textures
+
 Object* ship; // our ship model object
+float shipX, shipY; // Target for the ship to move to (follows mouse)
+
+// keys pressed boolean array
+bool keysPressed['z' - 'a'] = { false };
 
 // One enemy for testing
 Object* enemy;
@@ -163,7 +168,7 @@ void init( const char *filename, const char *animfile )
     mouse = new Mouse();
     skyBox = new SkyBox();
     // init our camera to a nice starting point
-    cam = new ArcballCamera( 35.0f, 0.0f, 90.0f );
+    cam = new ArcballCamera( 35.0f, 0.0f, M_PI / 2.0f );
     
     glEnable( GL_BLEND );
     glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
@@ -346,10 +351,10 @@ void display() {
 
     // And now render the ship...
     glUseProgram(passTextureShaderProgramHandle);
+    glBindTexture( GL_TEXTURE_2D, *textures.at("x-wing") );
     glPushMatrix(); {
+      glTranslatef(shipX, shipY, 0);
       glScalef(0.1, 0.1, 0.1);
-      //glEnable(GL_TEXTURE_2D);
-      glBindTexture( GL_TEXTURE_2D, *textures.at("x-wing") );
       ship->draw();
     } glPopMatrix();
 	
@@ -413,6 +418,7 @@ void cleanup() {
     delete ship;
 }
 
+// Runs on key down
 void keyboard( unsigned char key, int x, int y )
 {
     /* Escape */
@@ -425,6 +431,28 @@ void keyboard( unsigned char key, int x, int y )
         if( BLUR_SIZE < 1 ) BLUR_SIZE = 1;
     } else if( key == ' ' ) {
         // shoot laser
+    } else if( key == 'w' || key == 'W' ) {
+        keysPressed['w' - 'a'] = true;
+    } else if( key == 'a' || key == 'A' ) {
+        keysPressed[0] = true;
+    } else if( key == 'd' || key == 'D' ) {
+        keysPressed['d' - 'a'] = true;
+    } else if( key == 's' || key == 'S' ) {
+        keysPressed['s' - 'a'] = true;
+    }
+}
+
+// Runs on key up
+void keyboardUp( unsigned char key, int x, int y )
+{
+    if( key == 'w' || key == 'W' ) {
+        keysPressed['w' - 'a'] = false;
+    } else if( key == 'a' || key == 'A' ) {
+        keysPressed[0] = false;
+    } else if( key == 'd' || key == 'D' ) {
+        keysPressed['d' - 'a'] = false;
+    } else if( key == 's' || key == 'S' ) {
+        keysPressed['s' - 'a'] = false;
     }
 }
 
@@ -437,6 +465,29 @@ void keyboard( unsigned char key, int x, int y )
 //  be redrawn. yes, I said "needs be."
 //
 void update( int value ) {
+    // Move ship to edge gradually if key pressed
+    float delta = 0.3;
+    // Clamping values (could get the real ones from the projection somehow. Meh)
+    float maxY = 10;
+    float minY = -12;
+    float maxX = 10;
+    float minX = -10;
+
+    if (keysPressed['w' - 'a']) {
+        shipY += delta;
+        shipY = fmax(minY, fmin(shipY, maxY));
+    } else if (keysPressed['s' - 'a']) {
+        shipY -= delta;
+        shipY = fmax(minY, fmin(shipY, maxY));
+    }
+    if (keysPressed[0]) {
+        shipX += delta;
+        shipX = fmax(minX, fmin(shipX, maxX));
+    } else if (keysPressed['d' - 'a']) {
+        shipX -= delta;
+        shipX = fmax(minX, fmin(shipX, maxX));
+    }
+
     glutPostRedisplay();
     
     glutTimerFunc( (unsigned int)(1000.0 / 60.0), update, 0 );
@@ -487,6 +538,7 @@ int main( int argc, char *argv[] ) {
     glutCreateWindow( "keyToTheKingdom" );
 
     ship = new Object( "./models/Ship/X-Wing/X-Wing.obj" );
+    shipX = shipY = 0;
     enemy = new Object("./models/Enemy/tie_fighter/imp_fly_tiefighter.obj");
     
     /* initialize GLEW */
@@ -530,6 +582,7 @@ int main( int argc, char *argv[] ) {
     glutReshapeFunc( reshape );
     glutDisplayFunc( display );
     glutKeyboardFunc( keyboard );
+    glutKeyboardUpFunc( keyboardUp );
     glutMouseFunc( mouseCallback );
     glutMotionFunc( mouseMotion );
     glutTimerFunc( (unsigned int)(1000.0 / 60.0), update, 0 );
