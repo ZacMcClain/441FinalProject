@@ -29,6 +29,10 @@ public:
     float getZ() { return position.getZ(); }
 
     Point getPosition() { return position; }
+
+    float getScale() { return( scale ); }
+
+    void calcRandAsteroidSizeScaler();
 private:
     Point position;
     // Towards ship at the time of this enemy spawning
@@ -42,4 +46,6 @@ private:
     float deltaRot;
     // Random move speed
     float deltaPos;
+    // Scale
+    float scale;
 };

@@ -480,7 +480,8 @@ void display() {
                 enemyModel->draw();
             } else {          
                 glBindTexture( GL_TEXTURE_2D, *textures.at("asteroid") );
-                glScalef(0.5, 0.5, 0.5);
+                float asteroidScale = enemies[i].getScale();
+                glScalef( asteroidScale, asteroidScale, asteroidScale );
                 asteroid->draw();
             }
             glBindTexture( GL_TEXTURE_2D, 0 );
@@ -632,6 +633,7 @@ void update( int value ) {
         Enemy e( x,y,300, shipX, shipY );
         int tp = rand() % 2;
         e.type = ( tp == 0 ) ? Enemy::Type::SHIP : Enemy::Type::ROCK;
+        if( e.type == Enemy::Type::ROCK ) e.calcRandAsteroidSizeScaler();
         enemies.push_back( e );
     }
 

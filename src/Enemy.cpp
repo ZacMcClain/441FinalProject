@@ -13,6 +13,8 @@ Enemy::Enemy( float x, float y, float z, float shipX, float shipY ) {
     // generate a spin speed and random move speed
     deltaPos = rand() % 4 + 1;
     deltaRot = rand() % 6;
+    // init the scaling factor default to 1;
+    scale = 1;
 }
 
 // Moves towards the target
@@ -27,4 +29,26 @@ void Enemy::callRotate() {
     glRotatef( angle, axis.getX(), axis.getY(), axis.getZ() );
     // Spin rotation
     glRotatef( rotation, direction.getX(), direction.getY(), direction.getZ() );
+}
+
+void Enemy::calcRandAsteroidSizeScaler()
+{
+    int tmp = rand() % 5;
+    switch( tmp ) {
+        case 0:
+            scale = 0.05;
+            break;
+        case 1:
+            scale = 0.1;
+            break;
+        case 2:
+            scale = 0.3;
+            break;
+        case 3:
+            scale = 0.6;
+            break;
+        case 4:
+            scale = 0.8;
+            break;
+    }
 }
