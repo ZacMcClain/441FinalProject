@@ -476,9 +476,10 @@ void update( int value ) {
     // Clamping values (could get the real ones from the projection somehow. Meh)
     float maxY = 10;
     float minY = -12;
-    float maxX = 10;
-    float minX = -10;
+    float maxX = 15;
+    float minX = -15;
 
+    // up/down
     if (keysPressed['w' - 'a']) {
         shipY += delta;
         shipY = fmax(minY, fmin(shipY, maxY));
@@ -486,6 +487,7 @@ void update( int value ) {
         shipY -= delta;
         shipY = fmax(minY, fmin(shipY, maxY));
     }
+    // left/right
     if (keysPressed[0]) {
         shipX += delta;
         shipX = fmax(minX, fmin(shipX, maxX));

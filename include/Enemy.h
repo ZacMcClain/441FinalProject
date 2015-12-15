@@ -9,6 +9,7 @@
 #endif
 
 #include "Point.h"
+#include <stdlib.h>
 #include <math.h>
 
 class Enemy {
@@ -32,4 +33,10 @@ private:
     // Angle and axis to rotate towards heading
     float angle;
     Vector axis;
+    // Rotation along heading for a little spinning animation
+    float rotation;
+    // Random rotation update speed
+    float deltaRot;
+    // Random move speed
+    float deltaPos;
 };

@@ -10,7 +10,7 @@
 		
 Window::Window()
 {
-	setDimensions( 512, 512 );
+	setDimensions( 640, 400 );
 }
 
 
