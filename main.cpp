@@ -475,7 +475,7 @@ void display() {
         glPushMatrix(); {
             glTranslatef(enemies[i].getX(), enemies[i].getY(), enemies[i].getZ()); 
             enemies[i].callRotate();
-            if( enemies[i].type == Enemy::Type::SHIP ){
+            if( enemies[i].type == Enemy::SHIP ){
                 glBindTexture( GL_TEXTURE_2D, *textures.at("tiefighter"));
                 enemyModel->draw();
             } else {          
@@ -632,8 +632,8 @@ void update( int value ) {
         int y = rand() % 100 - 50;
         Enemy e( x,y,300, shipX, shipY );
         int tp = rand() % 2;
-        e.type = ( tp == 0 ) ? Enemy::Type::SHIP : Enemy::Type::ROCK;
-        if( e.type == Enemy::Type::ROCK ) e.calcRandAsteroidSizeScaler();
+        e.type = ( tp == 0 ) ? Enemy::SHIP : Enemy::ROCK;
+        if( e.type == Enemy::ROCK ) e.calcRandAsteroidSizeScaler();
         enemies.push_back( e );
     }
 
