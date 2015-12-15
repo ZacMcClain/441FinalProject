@@ -7,9 +7,13 @@ Names:
 	Walter Carl Schlosser ( All Might ) 
     Tyler M. Bank ( CoolPantsBro )
 
-Program Title: Key To The Kingdom ( Final Project )
+Program Title: 
+	Key To The Kingdom ( Final Project )
+
 Description:
 
+	This program has been designed to showcase several of the topics learned in
+	the CSCI441, Computer Graphics course at the Colorado School of Mines.
 
 Usage:
     
@@ -20,8 +24,10 @@ Usage:
 Build Instructions:
 
 	Simply navigate to the working directory and type 'make.' main.cpp needs
-    to be linked with the OpenGL / freeglut libraries and GLUI.  The
-    program also makes use of the Point class defined in Point.h
+    to be linked with the OpenGL / freeglut libraries and GLUI as well as GLEW.
+    It also has a number of custom classes and files who sources can be found
+    in src/ folder. main.cpp must also be linked to the header files for these classes
+    found in the include/ directory.
 
 	~/path/to/main.cpp $ make
 	if( OS X or *nix )
