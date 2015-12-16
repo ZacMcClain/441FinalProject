@@ -30,15 +30,21 @@ void Enemy::move() {
 // calls glRotatef to face the direction heading, and spins around
 void Enemy::callRotate() {
     // Spin rotation
-    glTranslatef(0, 4, 0);
-    glRotatef( rotation, direction.getX(), direction.getY(), direction.getZ() );
-    glTranslatef(0, -4, 0);
+	if( type == SHIP ){
+		glTranslatef(0, 4, 0);
+		glRotatef( rotation, direction.getX(), direction.getY(), direction.getZ() );
+		glTranslatef(0, -4, 0);
 
-    // Translate so rotates about center
-    glTranslatef(0, 4, 0);
-	// heading rotation
-    glRotatef( angle, axis.getX(), axis.getY(), axis.getZ() );
-    glTranslatef(0, -4, 0);
+		// Translate so rotates about center
+		glTranslatef(0, 4, 0);
+		// heading rotation
+		glRotatef( angle, axis.getX(), axis.getY(), axis.getZ() );
+		glTranslatef(0, -4, 0);
+	} else {
+		glRotatef( rotation, direction.getX(), direction.getY(), direction.getZ() );
+		// heading rotation
+		glRotatef( angle, axis.getX(), axis.getY(), axis.getZ() );
+	}
 }
 
 void Enemy::calcRandAsteroidSizeScaler()
