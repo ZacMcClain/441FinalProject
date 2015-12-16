@@ -6,9 +6,11 @@ Enemy::Enemy( float x, float y, float z, float shipX, float shipY ) {
     Point target = Point( shipX, shipY, 0.0f );
     direction = target - position;
     direction.normalize();
+    
     // find the rotation parameters
-    angle = ( 180.0 / 3.14159265 * acos(dot(direction, Vector(0.0, 0.0, 1.0))) );
-    axis = cross( Vector(0.0, 0.0, 1.0), direction );
+    Vector minusZ(0.0, 0.0, -1.0);
+    angle = ( 180.0 / 3.14159265 * acos(dot(direction, minusZ)) );
+    axis = cross( minusZ, direction );
 
     // generate a spin speed and random move speed
     deltaPos = rand() % 4 + 1;
@@ -27,10 +29,16 @@ void Enemy::move() {
 
 // calls glRotatef to face the direction heading, and spins around
 void Enemy::callRotate() {
+    // Spin rotation
+    glTranslatef(0, 4, 0);
+    glRotatef( rotation, direction.getX(), direction.getY(), direction.getZ() );
+    glTranslatef(0, -4, 0);
+
+    // Translate so rotates about center
+    glTranslatef(0, 4, 0);
 	// heading rotation
     glRotatef( angle, axis.getX(), axis.getY(), axis.getZ() );
-    // Spin rotation
-    glRotatef( rotation, direction.getX(), direction.getY(), direction.getZ() );
+    glTranslatef(0, -4, 0);
 }
 
 void Enemy::calcRandAsteroidSizeScaler()
