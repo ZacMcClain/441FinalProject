@@ -328,6 +328,7 @@ void drawText()
 void drawLifeBar()
 {
     glDisable( GL_TEXTURE_2D );
+    glDisable( GL_DEPTH_TEST );
     glDisable( GL_LIGHTING );
 
     glMatrixMode( GL_PROJECTION );
@@ -350,13 +351,26 @@ void drawLifeBar()
             glVertex2f( 0,(window.getHeight() * 0.075) ); // bottom left
         }; glEnd();
 
-        // NOT WORKING YET
-        float messageH = 10.0f;
+        float messageH = ( window.getHeight()*0.03 );
+        float messageW = ( window.getWidth()*0.58 );
+
         string message = to_string( ship->getLife() ) + "/" + to_string( ship->getMaxLife() );
+        
         for( int i = 0; i < message.length(); i++ ) {
-            glColor4f( 0,0,0,1 );
-            glRasterPos2f( (i * 12) + ((window.getWidth()/2.0f)-(message.length()*12 + 10)), messageH );
-            glutBitmapCharacter( GLUT_BITMAP_HELVETICA_18, message.at(i) );
+            glColor4f( 1,1,1,1 );
+            glRasterPos2f( (i * 8) + (messageW - (message.length()*8 + 10)), messageH );
+            glutBitmapCharacter( GLUT_BITMAP_HELVETICA_12, message.at(i) );
+        }
+
+        messageH = ( window.getHeight()*0.95 );
+        messageW = ( window.getWidth() );
+
+        message = "Score: " + to_string( score );
+        
+        for( int i = 0; i < message.length(); i++ ) {
+            glColor4f( 1, 1, 0, 1 );
+            glRasterPos2f( (i * 15) + (messageW - (message.length()*15 + 10)), messageH );
+            glutBitmapCharacter( GLUT_BITMAP_TIMES_ROMAN_24, message.at(i) );
         }
 
         glMatrixMode( GL_PROJECTION );
@@ -366,6 +380,7 @@ void drawLifeBar()
     glMatrixMode( GL_MODELVIEW );
 
     glEnable( GL_LIGHTING );
+    glEnable( GL_DEPTH_TEST );
     glEnable( GL_TEXTURE_2D );
 }
 
@@ -801,7 +816,7 @@ void update( int value ) {
     			if( distance - sumRadii < 0 )
     			{
     				shakeCount = 60;
-                    ship->setLife( ship->getLife() - 20 );
+                    ship->setLife( ship->getLife() - 50 );
     			}
     		}
     	}
