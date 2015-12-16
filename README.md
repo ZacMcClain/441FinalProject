@@ -7,7 +7,7 @@
 
 ## TODO:
 
-* Everything
+* Destroy enemies on laser collide
 
 ## Description:
 
