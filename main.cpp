@@ -365,19 +365,22 @@ void drawLifeBar()
 
 void drawLasers()
 {
-  glPushMatrix();
-    glDisable(GL_LIGHTING);
-    glEnable(GL_LINE_SMOOTH);
-	glLineWidth( 5 );
-	glTranslatef(50*shipScale + ship->getX(), 21.5*shipScale + ship->getY(), 50*shipScale);
-	// glRotate with ship direction
-	glBegin(GL_LINES);
-	  glColor3f(1.0f, 0.0f, 0.0f);
-	  glVertex3f(0, 0, 0);
-	  glVertex3f(0, 0, 100*shipScale);
-	glEnd();
-    glEnable(GL_LIGHTING);
-  glPopMatrix();
+    glDisable( GL_TEXTURE_2D );
+
+    glPushMatrix();
+        glDisable( GL_LIGHTING );
+        glDisable( GL_TEXTURE_2D );
+        glEnable( GL_LINE_SMOOTH );
+	    glLineWidth( 5 );
+	    glTranslatef(50*shipScale + ship->getX(), 21.5*shipScale + ship->getY(), 50*shipScale);
+	    // glRotate with ship direction
+	    glBegin(GL_LINES);
+    	    glColor3f(1.0f, 0.0f, 0.0f);
+    	    glVertex3f(0, 0, 0);
+    	    glVertex3f(0, 0, 100*shipScale);
+	    glEnd();
+        glEnable(GL_LIGHTING);
+    glPopMatrix();
   
   glPushMatrix();
     glDisable(GL_LIGHTING);
@@ -435,26 +438,28 @@ void drawLasers()
 	glEnd();
     glEnable(GL_LIGHTING);
   glPopMatrix();
+
+  glEnable( GL_TEXTURE_2D );
 }
 
 // Draws objects that should glow (just the lasers when finished)
 void drawGlowObjs() {
-  // just a cube for testing
+    // just a cube for testing
     if( testMode ) {
         double curent_time =  (double)glutGet(GLUT_ELAPSED_TIME) / 1000.0;
-        glDisable(GL_TEXTURE_2D);
+        glDisable( GL_TEXTURE_2D) ;
         glColor4f(0, 1, 0, 1);
         glPushMatrix(); {
             glTranslatef(sin(curent_time)*5, cos(curent_time)*3 + 2.15, 20);
             glutSolidCube(3);
         } glPopMatrix();
+        glEnable( GL_TEXTURE_2D );
     }
-  
-  
-  // if firing, draw lasers
-  if( laserFrameCount > 0 && fireLaser == true ){
-	drawLasers();
-  }
+     
+    // if firing, draw lasers
+    if( laserFrameCount > 0 && fireLaser == true ){
+    	drawLasers();
+    }
 }
 
 void display() {
