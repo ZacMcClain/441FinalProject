@@ -439,10 +439,11 @@ void drawLasers()
 
 // Draws objects that should glow (just the lasers when finished)
 void drawGlowObjs() {
+    // this has to be here or else the following gets textured with transparency and disappears
+    glDisable(GL_TEXTURE_2D);
   // just a cube for testing
     if( testMode ) {
         double curent_time =  (double)glutGet(GLUT_ELAPSED_TIME) / 1000.0;
-        glDisable(GL_TEXTURE_2D);
         glColor4f(0, 1, 0, 1);
         glPushMatrix(); {
             glTranslatef(sin(curent_time)*5, cos(curent_time)*3 + 2.15, 20);
