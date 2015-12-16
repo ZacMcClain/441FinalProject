@@ -169,7 +169,7 @@ void init( const char *filename, const char *animfile )
 	float spotlightCol[4] = { 1,1,1,1 };
 	float spotambientCol[4] = { 1.0,1.0,1.0,1.0 };
     glLightfv( GL_LIGHT1, GL_DIFFUSE, spotlightCol );
-    glLightfv( GL_LIGHT1, GL_AMBIENT, ambientCol );
+    glLightfv( GL_LIGHT1, GL_AMBIENT, spotambientCol );
     glLightf( GL_LIGHT1, GL_SPOT_CUTOFF, 50.0 );
 	glLightf( GL_LIGHT1, GL_SPOT_EXPONENT, 100 );
     
@@ -541,13 +541,23 @@ void display() {
         } glPopMatrix(); 
 			
 		// draw collision wires
-		glPushMatrix(); {
-			glUseProgram(0);
-			glColor3f(1, 0, 0);
-			glTranslatef( enemies[i].getX(), enemies[i].getCollideY(), enemies[i].getZ() );
-			glutWireSphere( 3.0, 10, 10 );
-			glUseProgram(passTextureShaderProgramHandle);
-		} glPopMatrix();
+		if( enemies[i].type == Enemy::SHIP ){
+			glPushMatrix(); {
+				glUseProgram(0);
+				glColor3f(1, 0, 0);
+				glTranslatef( enemies[i].getX(), enemies[i].getCollideY(), enemies[i].getZ() );
+				glutWireSphere( 3.0, 10, 10 );
+				glUseProgram(passTextureShaderProgramHandle);
+			} glPopMatrix();
+		} else {
+			glPushMatrix(); {
+				glUseProgram(0);
+				glColor3f(1, 0, 0);
+				glTranslatef( enemies[i].getX(), enemies[i].getY(), enemies[i].getZ() );
+				glutWireSphere( enemies[i].getScale()*10, 10, 10 );
+				glUseProgram(passTextureShaderProgramHandle);
+			} glPopMatrix();
+		}
     }
 
     // Then render the framebuffer contents as a textured 2d quad
@@ -699,15 +709,27 @@ void update( int value ) {
 	// detect collision with x-wing
 	for( int i = 0; i < enemies.size(); i++ )
 	{
-		double dx = enemies[i].getX() - ship->getX();
-		double dy = enemies[i].getCollideY() - (ship->getY() + 20*shipScale);
-		double dz = enemies[i].getZ();
-		double distance = sqrt( (dx)*(dx) + (dy)*(dy) + (dz)*(dz) );
-		double sumRadii = enemies[i].getRadius() + 3;
-		if( distance - sumRadii < 0 )
-		{
-			shakeCount = 60;
-		}		
+		if( enemies[i].type == Enemy::SHIP ){
+			double dx = enemies[i].getX() - ship->getX();
+			double dy = enemies[i].getCollideY() - (ship->getY() + 20*shipScale);
+			double dz = enemies[i].getZ();
+			double distance = sqrt( (dx)*(dx) + (dy)*(dy) + (dz)*(dz) );
+			double sumRadii = enemies[i].getRadius() + 3;
+			if( distance - sumRadii < 0 )
+			{
+				shakeCount = 60;
+			}
+		} else {
+			double dx = enemies[i].getX() - ship->getX();
+			double dy = enemies[i].getY() - (ship->getY() + 20*shipScale);
+			double dz = enemies[i].getZ();
+			double distance = sqrt( (dx)*(dx) + (dy)*(dy) + (dz)*(dz) );
+			double sumRadii = enemies[i].getScale()*10 + 3;
+			if( distance - sumRadii < 0 )
+			{
+				shakeCount = 60;
+			}
+		}
 	}
 
     glutPostRedisplay();
