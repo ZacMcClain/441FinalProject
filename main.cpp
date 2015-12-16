@@ -280,36 +280,82 @@ void reshape( int w, int h )
 void drawText()
 {
     glDisable( GL_TEXTURE_2D );
-    // START drawing of Bit map text for Fps display
+    glDisable( GL_LIGHTING );
+
     glMatrixMode( GL_PROJECTION );
-    //glClear( GL_DEPTH_BUFFER_BIT);
   
-  glPushMatrix();
-  {
-    glLoadIdentity();
+    glPushMatrix();
+    {
+        glLoadIdentity();
 
-    gluOrtho2D( 0, window.getWidth(), 0, window.getHeight() );
-    glMatrixMode( GL_MODELVIEW );
-    glLoadIdentity();
+        gluOrtho2D( 0, window.getWidth(), 0, window.getHeight() );
+        glMatrixMode( GL_MODELVIEW );
+        glLoadIdentity();
     
-    float messageH = 10.0f;
+        float messageH = 10.0f;
     
-    for( int i = 0; i < message.length(); i++ ) {
-        if( gameOver ) {
-            glColor4f( 0, 1, 0, 1 );
-            message = "You died!!! With a score of: " + to_string( score ) + ". Press 'q' to quit";
-            messageH = (window.getHeight()/4);
-        } else {
-            glColor4f( 1, 1, 1, 1 );
+        for( int i = 0; i < message.length(); i++ ) {
+            if( gameOver ) {
+                glColor4f( 0, 1, 0, 1 );
+                message = "You died!!! With a score of: " + to_string( score ) + ". Press 'q' to quit";
+                messageH = (window.getHeight()/4);
+            } else {
+                glColor4f( 1, 1, 1, 1 );
+            }
+            glRasterPos2f( (i * 12) + (window.getWidth()-(message.length()*12 + 10)), messageH );
+            glutBitmapCharacter( GLUT_BITMAP_HELVETICA_18, message.at(i) );
         }
-        glRasterPos2f( (i * 12) + (window.getWidth()-(message.length()*12 + 10)), messageH );
-        glutBitmapCharacter( GLUT_BITMAP_HELVETICA_18, message.at(i) );
-    }
-    glMatrixMode( GL_PROJECTION );
-  };
-  glPopMatrix();
+        glMatrixMode( GL_PROJECTION );
+    };
+    glPopMatrix();
 
-  glMatrixMode( GL_MODELVIEW );
+    glMatrixMode( GL_MODELVIEW );
+
+    glEnable( GL_LIGHTING );
+    glEnable( GL_TEXTURE_2D );
+}
+
+void drawLifeBar()
+{
+    glDisable( GL_TEXTURE_2D );
+    glDisable( GL_LIGHTING );
+
+    glMatrixMode( GL_PROJECTION );
+  
+    glPushMatrix();
+    {
+        glLoadIdentity();
+
+        gluOrtho2D( 0, window.getWidth(), 0, window.getHeight() );
+        glMatrixMode( GL_MODELVIEW );
+        glLoadIdentity();
+
+        float percentAlive = ( (float)ship->getLife()/(float)ship->getMaxLife() );
+
+        glBegin( GL_QUADS ); {
+            glColor4f( 0,1,0,0.75 );
+            glVertex2f( 0,0 ); // bottom left
+            glVertex2f( (window.getWidth() * percentAlive),0 ); // top left
+            glVertex2f( (window.getWidth() * percentAlive),(window.getHeight() * 0.075) ); // top right
+            glVertex2f( 0,(window.getHeight() * 0.075) ); // bottom left
+        }; glEnd();
+
+        float messageH = 5.0f;
+        string message = to_string( ship->getLife() ) + "/" + to_string( ship->getMaxLife() );
+        for( int i = 0; i < message.length(); i++ ) {
+            glColor4f( 0,0,0,1 );
+            glRasterPos2f( (i * 12) + (window.getWidth()-(message.length()*12 + 10)), messageH );
+            glutBitmapCharacter( GLUT_BITMAP_HELVETICA_18, message.at(i) );
+        }
+
+        glMatrixMode( GL_PROJECTION );
+    };
+    glPopMatrix();
+
+    glMatrixMode( GL_MODELVIEW );
+
+    glEnable( GL_LIGHTING );
+    glEnable( GL_TEXTURE_2D );
 }
 
 void drawLasers()
@@ -520,10 +566,11 @@ void display() {
     } glMatrixMode( GL_PROJECTION );
     glPopMatrix();
 
-    // reenable features
+    // re-enable features
     glEnable( GL_LIGHTING );
     glEnable( GL_DEPTH_TEST );
-    
+
+    drawLifeBar();
 
     glutSwapBuffers();
 }
@@ -561,7 +608,10 @@ void keyboard( unsigned char key, int x, int y )
         keysPressed['s' - 'a'] = true;
     } else if( key == '1' ) {
         // TESTING THE SHAKES
-        shakeCount = 60;
+        shakeCount = 40;
+    } else if( key == '2' ) {
+        // TESTING THE LIFE BAR
+        ship->setLife( ship->getLife() - 5 );
     }
 }
 
@@ -576,8 +626,7 @@ void keyboardUp( unsigned char key, int x, int y )
         keysPressed['d' - 'a'] = false;
     } else if( key == 's' || key == 'S' ) {
         keysPressed['s' - 'a'] = false;
-    }
-	  else if( key == ' ' ){
+    } else if( key == ' ' ){
 		fireLaser = false;
 	}
 }
