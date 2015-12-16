@@ -6,7 +6,7 @@
 
 #include "ArcballCamera.h"
 
-#define M_PI 3.14159265
+#define PI 3.14159265358979323846264338327950288
 
 //** Public Default Constructors and Destructor:
 		
@@ -35,11 +35,10 @@ void ArcballCamera::computePosition()
 
 void ArcballCamera::boundPhi()
 {
-	//float M_PI = 3.14159265;
 	if( phi <= 0 )
         phi = 0+0.001;
-   	if( phi >= M_PI)
-        phi = M_PI-0.001;
+   	if( phi >= PI)
+        phi = PI-0.001;
 }
 
 

@@ -28,11 +28,11 @@
 #include "Enemy.h"
 #include "Ship.h"
 
-#define M_PI 3.14159265
+#define PI 3.14159265358979323846264338327950288
 
 using namespace std;
 
-// GLOBAL VARIABLES ////////////////////////////////////////////////////////////
+// GLOBAL VARIABLES ///////////////////////////////////////////////////////////
 
 Mouse* mouse; // keeps track of our mouse stuff
 ArcballCamera* cam; // our camera model
@@ -63,6 +63,8 @@ bool gameOver = false;
 string message;
 // keeping track of the score.
 int score = 0;
+// for testing objects
+bool testMode = false;
 
 GLuint blurShaderProgramHandle, shiftShaderProgramHandle;
 GLuint passTextureShaderProgramHandle, glowShaderProgramHandle;
@@ -186,7 +188,7 @@ void init( const char *filename, const char *animfile )
     mouse = new Mouse();
     skyBox = new SkyBox();
     // init our camera to a nice starting point
-    cam = new ArcballCamera( 35.0f, 0.0f, M_PI / 2.0f );
+    cam = new ArcballCamera( 35.0f, 0.0f, PI / 2.0f );
     
     glEnable( GL_BLEND );
     glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
@@ -282,36 +284,83 @@ void reshape( int w, int h )
 void drawText()
 {
     glDisable( GL_TEXTURE_2D );
-    // START drawing of Bit map text for Fps display
+    glDisable( GL_LIGHTING );
+
     glMatrixMode( GL_PROJECTION );
-    //glClear( GL_DEPTH_BUFFER_BIT);
   
-  glPushMatrix();
-  {
-    glLoadIdentity();
+    glPushMatrix();
+    {
+        glLoadIdentity();
 
-    gluOrtho2D( 0, window.getWidth(), 0, window.getHeight() );
-    glMatrixMode( GL_MODELVIEW );
-    glLoadIdentity();
+        gluOrtho2D( 0, window.getWidth(), 0, window.getHeight() );
+        glMatrixMode( GL_MODELVIEW );
+        glLoadIdentity();
     
-    float messageH = 10.0f;
+        float messageH = 10.0f;
     
-    for( int i = 0; i < message.length(); i++ ) {
-        if( gameOver ) {
-            glColor4f( 0, 1, 0, 1 );
-            message = "You died!!! With a score of: " + to_string( score ) + ". Press 'q' to quit";
-            messageH = (window.getHeight()/4);
-        } else {
-            glColor4f( 1, 1, 1, 1 );
+        for( int i = 0; i < message.length(); i++ ) {
+            if( gameOver ) {
+                glColor4f( 0, 1, 0, 1 );
+                message = "You died!!! With a score of: " + to_string( score ) + ". Press 'q' to quit";
+                messageH = (window.getHeight()/4);
+            } else {
+                glColor4f( 1, 1, 1, 1 );
+            }
+            glRasterPos2f( (i * 12) + (window.getWidth()-(message.length()*12 + 10)), messageH );
+            glutBitmapCharacter( GLUT_BITMAP_HELVETICA_18, message.at(i) );
         }
-        glRasterPos2f( (i * 12) + (window.getWidth()-(message.length()*12 + 10)), messageH );
-        glutBitmapCharacter( GLUT_BITMAP_HELVETICA_18, message.at(i) );
-    }
-    glMatrixMode( GL_PROJECTION );
-  };
-  glPopMatrix();
+        glMatrixMode( GL_PROJECTION );
+    };
+    glPopMatrix();
 
-  glMatrixMode( GL_MODELVIEW );
+    glMatrixMode( GL_MODELVIEW );
+
+    glEnable( GL_LIGHTING );
+    glEnable( GL_TEXTURE_2D );
+}
+
+void drawLifeBar()
+{
+    glDisable( GL_TEXTURE_2D );
+    glDisable( GL_LIGHTING );
+
+    glMatrixMode( GL_PROJECTION );
+  
+    glPushMatrix();
+    {
+        glLoadIdentity();
+
+        gluOrtho2D( 0, window.getWidth(), 0, window.getHeight() );
+        glMatrixMode( GL_MODELVIEW );
+        glLoadIdentity();
+
+        float percentAlive = ( (float)ship->getLife()/(float)ship->getMaxLife() );
+
+        glBegin( GL_QUADS ); {
+            glColor4f( 0,1,0,0.75 );
+            glVertex2f( 0,0 ); // bottom left
+            glVertex2f( (window.getWidth() * percentAlive),0 ); // top left
+            glVertex2f( (window.getWidth() * percentAlive),(window.getHeight() * 0.075) ); // top right
+            glVertex2f( 0,(window.getHeight() * 0.075) ); // bottom left
+        }; glEnd();
+
+        // NOT WORKING YET
+        float messageH = 10.0f;
+        string message = to_string( ship->getLife() ) + "/" + to_string( ship->getMaxLife() );
+        for( int i = 0; i < message.length(); i++ ) {
+            glColor4f( 0,0,0,1 );
+            glRasterPos2f( (i * 12) + ((window.getWidth()/2.0f)-(message.length()*12 + 10)), messageH );
+            glutBitmapCharacter( GLUT_BITMAP_HELVETICA_18, message.at(i) );
+        }
+
+        glMatrixMode( GL_PROJECTION );
+    };
+    glPopMatrix();
+
+    glMatrixMode( GL_MODELVIEW );
+
+    glEnable( GL_LIGHTING );
+    glEnable( GL_TEXTURE_2D );
 }
 
 void drawLasers()
@@ -391,13 +440,15 @@ void drawLasers()
 // Draws objects that should glow (just the lasers when finished)
 void drawGlowObjs() {
   // just a cube for testing
-  double curent_time =  (double)glutGet(GLUT_ELAPSED_TIME) / 1000.0;
-  glDisable(GL_TEXTURE_2D);
-  glColor4f(0, 1, 0, 1);
-  glPushMatrix(); {
-    glTranslatef(sin(curent_time)*5, cos(curent_time)*3 + 2.15, 20);
-    glutSolidCube(3);
-  } glPopMatrix();
+    if( testMode ) {
+        double curent_time =  (double)glutGet(GLUT_ELAPSED_TIME) / 1000.0;
+        glDisable(GL_TEXTURE_2D);
+        glColor4f(0, 1, 0, 1);
+        glPushMatrix(); {
+            glTranslatef(sin(curent_time)*5, cos(curent_time)*3 + 2.15, 20);
+            glutSolidCube(3);
+        } glPopMatrix();
+    }
   
   
   // if firing, draw lasers
@@ -450,7 +501,9 @@ void display() {
     glUseProgram(shiftShaderProgramHandle);
     glUniform1f(shiftTimeLoc, (float)curent_time);
     glLoadIdentity();
+
     cam->lookAt();
+
     skyBox->drawSkybox( 300 );
 
     // And now render the ship...
@@ -464,21 +517,23 @@ void display() {
       ship->draw();
     } glPopMatrix();
 	
-	glPushMatrix(); {
-      glTranslatef( ship->getX(), ship->getY() + 20*shipScale, 0.0 );
-      glutWireSphere( 3.0, 10, 10 );
-    } glPopMatrix();
+    if( testMode ) {
+    	glPushMatrix(); {
+          glTranslatef( ship->getX(), ship->getY() + 20*shipScale, 0.0 );
+          glutWireSphere( 3.0, 10, 10 );
+        } glPopMatrix();
+    }
 
     glBindTexture( GL_TEXTURE_2D, 0 );
 
 	// position the spot light and direction
-	float spotlightPosition[4] = { ship->getX(), 21.5f*shipScale + ship->getY(), 0.0, 1.0 };
+	float spotlightPosition[4] = { ship->getX(), static_cast<float>(21.5*shipScale + ship->getY()), 0.0, 1.0 };
 	glLightfv( GL_LIGHT1, GL_POSITION, spotlightPosition );
 	GLfloat spotlightDirection[4] = { 0.0, 0.0, 1.0, 0.0};
 	glLightfv( GL_LIGHT1, GL_SPOT_DIRECTION, spotlightDirection );
 
-    // Draw tie fighter at each enemy position
-    for (int i = 0; i < enemies.size(); i++) {
+    // Draw tie fighter or asteroid at each enemy position
+    for( int i = 0; i < enemies.size(); i++ ) {
         glPushMatrix(); {
             glTranslatef(enemies[i].getX(), enemies[i].getY(), enemies[i].getZ()); 
             enemies[i].callRotate();
@@ -495,23 +550,25 @@ void display() {
         } glPopMatrix(); 
 			
 		// draw collision wires
-		if( enemies[i].type == Enemy::SHIP ){
-			glPushMatrix(); {
-				glUseProgram(0);
-				glColor3f(1, 0, 0);
-				glTranslatef( enemies[i].getX(), enemies[i].getCollideY(), enemies[i].getZ() );
-				glutWireSphere( 3.0, 10, 10 );
-				glUseProgram(passTextureShaderProgramHandle);
-			} glPopMatrix();
-		} else {
-			glPushMatrix(); {
-				glUseProgram(0);
-				glColor3f(1, 0, 0);
-				glTranslatef( enemies[i].getX(), enemies[i].getY(), enemies[i].getZ() );
-				glutWireSphere( enemies[i].getScale()*10, 10, 10 );
-				glUseProgram(passTextureShaderProgramHandle);
-			} glPopMatrix();
-		}
+        if( testMode ) {
+    		if( enemies[i].type == Enemy::SHIP ){
+    			glPushMatrix(); {
+    				glUseProgram(0);
+    				glColor3f(1, 0, 0);
+    				glTranslatef( enemies[i].getX(), enemies[i].getCollideY(), enemies[i].getZ() );
+    				glutWireSphere( 3.0, 10, 10 );
+    				glUseProgram(passTextureShaderProgramHandle);
+    			} glPopMatrix();
+    		} else {
+    			glPushMatrix(); {
+    				glUseProgram(0);
+    				glColor3f(1, 0, 0);
+    				glTranslatef( enemies[i].getX(), enemies[i].getY(), enemies[i].getZ() );
+    				glutWireSphere( enemies[i].getScale()*10, 10, 10 );
+    				glUseProgram(passTextureShaderProgramHandle);
+    			} glPopMatrix();
+    		}
+        }
     }
 
     // Then render the framebuffer contents as a textured 2d quad
@@ -546,10 +603,12 @@ void display() {
     } glMatrixMode( GL_PROJECTION );
     glPopMatrix();
 
-    // reenable features
+    // re-enable features
     glEnable( GL_LIGHTING );
     glEnable( GL_DEPTH_TEST );
-    
+
+    drawLifeBar();
+
     glutSwapBuffers();
 }
 
@@ -584,9 +643,14 @@ void keyboard( unsigned char key, int x, int y )
         keysPressed['d' - 'a'] = true;
     } else if( key == 's' || key == 'S' ) {
         keysPressed['s' - 'a'] = true;
+    } else if( key == 't' || key == 'T' ) { // toggle test mode
+        testMode = !testMode;
     } else if( key == '1' ) {
         // TESTING THE SHAKES
-        shakeCount = 60;
+        shakeCount = 40;
+    } else if( key == '2' ) {
+        // TESTING THE LIFE BAR
+        ship->setLife( ship->getLife() - 5 );
     }
 }
 
@@ -601,8 +665,7 @@ void keyboardUp( unsigned char key, int x, int y )
         keysPressed['d' - 'a'] = false;
     } else if( key == 's' || key == 'S' ) {
         keysPressed['s' - 'a'] = false;
-    }
-	  else if( key == ' ' ){
+    } else if( key == ' ' ){
 		fireLaser = false;
 	}
 }
@@ -668,6 +731,7 @@ void update( int value ) {
 			if( distance - sumRadii < 0 )
 			{
 				shakeCount = 60;
+                ship->setLife( ship->getLife() - 20 );
 			}
 		} else {
 			double dx = enemies[i].getX() - ship->getX();
@@ -678,6 +742,7 @@ void update( int value ) {
 			if( distance - sumRadii < 0 )
 			{
 				shakeCount = 60;
+                ship->setLife( ship->getLife() - 20 );
 			}
 		}
 	}
@@ -696,11 +761,6 @@ void update( int value ) {
 void registerTextures() {
     ////// LOAD IN OUR TEXTURES //////////////////////////////////////////////////////////////
 
-    // this is how to use the textures obj
-    // textures.add( "example" );
-    // registerSOILTexture( "textures/ground.jpg", *textures.at("example") );
-    // printf( "[INFO]: example texture read in and registered\n" );
-    
     printf( "[INFO]: registering skybox..." );
     fflush( stdout );
     
@@ -727,6 +787,7 @@ void registerTextures() {
     textures.add("asteroidModel");
     registerSOILTexture("./models/Rocks/large/Textures/enemy_rock2_s3tc.png", *textures.at("asteroidModel"));
     printf("[INFO]: Asteroid texture read in and registered\n");
+
     //////////////////////////////////////////////////////////////////////////////////////////
 }
 

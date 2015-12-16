@@ -29,6 +29,8 @@ void Ship::setup()
     minX = -15;
 
     delta = 0.3;
+
+    life = maxLife = 1000;
 }
 
 void Ship::moveUp( bool upKeys )

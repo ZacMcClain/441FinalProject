@@ -30,8 +30,11 @@ class Ship : public ObjectBase, public Object
 	//** Getters and Setters:
 
 		// Getters:
+		int getLife() { return( life ); }
+		int getMaxLife() { return( maxLife ); }
 
 		// Setters:
+		void setLife( int newLife ) { this->life = newLife; }
 
 	private:
 
@@ -50,6 +53,9 @@ class Ship : public ObjectBase, public Object
 
     	// Move ship to edge gradually if key pressed
     	float delta;
+
+    	// The ships life
+    	int life, maxLife;
 
 	//** Functions:
     	void setup();
