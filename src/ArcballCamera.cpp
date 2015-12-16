@@ -6,6 +6,8 @@
 
 #include "ArcballCamera.h"
 
+#define PI 3.14159265358979323846264338327950288
+
 //** Public Default Constructors and Destructor:
 		
 ArcballCamera::ArcballCamera( float myRadius, float myTheta, float myPhi ) : Camera( myRadius, myTheta, myPhi )
@@ -33,7 +35,6 @@ void ArcballCamera::computePosition()
 
 void ArcballCamera::boundPhi()
 {
-	float PI = 3.14159265;
 	if( phi <= 0 )
         phi = 0+0.001;
    	if( phi >= PI)
