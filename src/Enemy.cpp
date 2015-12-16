@@ -15,6 +15,7 @@ Enemy::Enemy( float x, float y, float z, float shipX, float shipY ) {
     // generate a spin speed and random move speed
     deltaPos = rand() % 4 + 1;
     deltaRot = rand() % 6;
+    rotation = 0;
     // init the scaling factor default to 1;
     scale = 1;
 	

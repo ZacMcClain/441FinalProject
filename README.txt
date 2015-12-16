@@ -1,9 +1,14 @@
+CSCI441
+Castamere's All Mighty Guild of Cool Pants
+
 Names: 
+
 	Zac McClain ( Castamere Castelli / zamcclai@mines.edu )
 	Walter Schlosser ( All Might / wschloss@mymail.mines.edu )
-        Tyler Bank ( CoolPantsBro / tbank@mymail.mines.edu )
+    Tyler Bank ( CoolPantsBro / tbank@mymail.mines.edu )
 
 Program Title: 
+
 	Key To The Kingdom ( Final Project )
 
 Description:
@@ -34,12 +39,10 @@ Usage:
 
     'wasd'        -       Move the main ship around the screen
     ' ' (space)   -       Fire laser
-    left mouse    -       Click and drag to pan camera
-    right mouse   -       Click and drag to zoom camera
     't', 'T' keys -       Testing mode toggle
 
-    Camera  - To pan around the ship click and drag the right mouse button.
-    		- To Zoom in or out click and drag the left mouse button.
+    Camera  - To pan around the ship click and drag the left mouse button.
+    		- To Zoom in or out click and drag the right mouse button.
 
 
 Build Instructions:
@@ -60,11 +63,15 @@ Build Instructions:
 Notes:
 
 	Bugs: 
-		Laser can be seen though the ship.
-		Collision detection of the Tie fighters enemies a bit off
+		Laser can be seen though the ship due to order of rendering layers to 
+        the screen.  Other orders break the rendering for some reason.
 
 	Implementation Details:
 		... Please see comments in the source code for more details ...
+
+Input File:
+    
+    Our program does not require an input file.
 
 Distribution of work:
     
@@ -85,12 +92,21 @@ Distribution of work:
     	Small amount of group admin
 
     Tyler:
-	Laser rendering/effects/interaction
-	Part of the glow shader
-	Attached spotlight to player ship
-	Bounding sphere collision detection
+        Laser rendering/effects/interaction
+        Part of the glow shader
+        Attached spotlight to player ship
+        Bounding sphere collision detection
 
 Stats:
 	Time Investment:
+        Walter  - approx 8 hours
+        Zac     -
+        Tyler   -
 	Learning Score[0, 10]:
+        Walter  - 7/10
+        Zac     -
+        Tyler   -
 	Entertainment Score[0, 10]:
+        Walter  - 8/10
+        Zac     -
+        Tyler   -
