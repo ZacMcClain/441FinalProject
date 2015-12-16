@@ -15,6 +15,8 @@ Enemy::Enemy( float x, float y, float z, float shipX, float shipY ) {
     deltaRot = rand() % 6;
     // init the scaling factor default to 1;
     scale = 1;
+	
+	radius = 3.0;
 }
 
 // Moves towards the target

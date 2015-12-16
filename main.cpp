@@ -463,6 +463,11 @@ void display() {
       glScalef( shipScale, shipScale, shipScale );
       ship->draw();
     } glPopMatrix();
+	
+	glPushMatrix(); {
+      glTranslatef( ship->getX(), ship->getY() + 20*shipScale, 0.0 );
+      glutWireSphere( 3.0, 10, 10 );
+    } glPopMatrix();
 
     glBindTexture( GL_TEXTURE_2D, 0 );
 
@@ -488,6 +493,15 @@ void display() {
             }
             glBindTexture( GL_TEXTURE_2D, 0 );
         } glPopMatrix(); 
+			
+		// draw collision wires
+		glPushMatrix(); {
+			glUseProgram(0);
+			glColor3f(1, 0, 0);
+			glTranslatef( enemies[i].getX(), enemies[i].getCollideY(), enemies[i].getZ() );
+			glutWireSphere( 3.0, 10, 10 );
+			glUseProgram(passTextureShaderProgramHandle);
+		} glPopMatrix();
     }
 
     // Then render the framebuffer contents as a textured 2d quad
@@ -526,7 +540,6 @@ void display() {
     glEnable( GL_LIGHTING );
     glEnable( GL_DEPTH_TEST );
     
-
     glutSwapBuffers();
 }
 
@@ -632,6 +645,20 @@ void update( int value ) {
             i--;
         }
     }
+	
+	// detect collision with x-wing
+	for( int i = 0; i < enemies.size(); i++ )
+	{
+		double dx = enemies[i].getX() - ship->getX();
+		double dy = enemies[i].getCollideY() - (ship->getY() + 20*shipScale);
+		double dz = enemies[i].getZ();
+		double distance = sqrt( (dx)*(dx) + (dy)*(dy) + (dz)*(dz) );
+		double sumRadii = enemies[i].getRadius() + 3;
+		if( distance - sumRadii < 0 )
+		{
+			shakeCount = 60;
+		}		
+	}
 
     glutPostRedisplay();
     
