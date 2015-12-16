@@ -836,6 +836,7 @@ void update( int value ) {
     				{
     					// we hit a target sphere.
     					enemies.erase(enemies.begin() + i);
+                        score++;
     				}
     			}
     		}

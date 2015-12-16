@@ -89,6 +89,7 @@ Distribution of work:
     	Loading and random sizing of the asteroid model
     	Creation (using some of Walters code) of the ship class
     	Life bar
+    	Game over screen
     	Small amount of group admin
 
     Tyler:
@@ -96,18 +97,18 @@ Distribution of work:
         Part of the glow shader
         Attached spotlight to player ship
         Bounding sphere collision detection
-	Raytrace collision detection with spheres for the laser.
+		Raytrace collision detection with spheres for the laser.
 
 Stats:
 	Time Investment:
         Walter  - approx 8 hours
-        Zac     -
+        Zac     - approx 8-9 hours (bit of a slow coder)
         Tyler   - approx 8 hours
 	Learning Score[0, 10]:
         Walter  - 7/10
-        Zac     -
+        Zac     - 8/10
         Tyler   - 8/10
 	Entertainment Score[0, 10]:
         Walter  - 8/10
-        Zac     -
+        Zac     - 9/10
         Tyler   - 9/10
