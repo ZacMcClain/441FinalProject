@@ -453,6 +453,20 @@ void drawGlowObjs() {
             glTranslatef(sin(curent_time)*5, cos(curent_time)*3 + 2.15, 20);
             glutSolidCube(3);
         } glPopMatrix();
+		
+		glPushMatrix();
+			glDisable(GL_LIGHTING);
+			glEnable(GL_LINE_SMOOTH);
+			glLineWidth( 5 );
+			// glRotate with ship direction
+			glBegin(GL_LINES);
+			  glColor3f(1.0f, 0.0f, 0.0f);
+			  glVertex3f(ship->getX(), 22*shipScale + ship->getY(), 0);
+			  glVertex3f(ship->getX(), 22*shipScale + ship->getY(), 100.0);
+			glEnd();
+			glEnable(GL_LIGHTING);
+	    glPopMatrix();
+		
         glEnable( GL_TEXTURE_2D );
     }
      
@@ -732,7 +746,7 @@ void update( int value ) {
 			double dy = enemies[i].getCollideY() - (ship->getY() + 20*shipScale);
 			double dz = enemies[i].getZ();
 			double distance = sqrt( (dx)*(dx) + (dy)*(dy) + (dz)*(dz) );
-			double sumRadii = enemies[i].getRadius() + 3;
+			double sumRadii = enemies[i].getRadius() + 3; // 3 is the ship's radius.
 			if( distance - sumRadii < 0 )
 			{
 				shakeCount = 60;
@@ -748,6 +762,41 @@ void update( int value ) {
 			{
 				shakeCount = 60;
                 ship->setLife( ship->getLife() - 20 );
+			}
+		}
+	}
+	
+	// Raytracing to check for line/sphere intersection.
+	if( laserFrameCount > 0 && fireLaser == true )
+	{
+		for( int i = 0; i < enemies.size(); i++ )
+		{
+			if( enemies[i].type == Enemy::SHIP ){
+				Point origin = Point( ship->getX(), 22*shipScale + ship->getY(), 0.0 );
+				Vector direction = Point(ship->getX(), 22*shipScale + ship->getY(), 100.0 ) - origin;
+				direction.normalize();
+				Point centerOfEnemy = Point(enemies[i].getX(), enemies[i].getCollideY(), enemies[i].getZ() );
+				double radius = enemies[i].getRadius();
+				double eval = (dot(direction, (origin - centerOfEnemy)))*(dot(direction, (origin - centerOfEnemy))) 
+																- (origin - centerOfEnemy).magSq() + radius*radius;
+				if( eval >= 0 )
+				{
+					// we hit a target sphere.
+					enemies.erase(enemies.begin() + i);
+				}
+			} else {
+				Point origin = Point( ship->getX(), 22*shipScale + ship->getY(), 0.0 );
+				Vector direction = Point(ship->getX(), 22*shipScale + ship->getY(), 100.0 ) - origin;
+				direction.normalize();
+				Point centerOfEnemy = Point(enemies[i].getX(), enemies[i].getY(), enemies[i].getZ() );
+				double radius = enemies[i].getScale()*10;
+				double eval = (dot(direction, (origin - centerOfEnemy)))*(dot(direction, (origin - centerOfEnemy))) 
+																- (origin - centerOfEnemy).magSq() + radius*radius;
+				if( eval >= 0 )
+				{
+					// we hit a target sphere.
+					enemies.erase(enemies.begin() + i);
+				}
 			}
 		}
 	}
