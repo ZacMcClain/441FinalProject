@@ -64,7 +64,7 @@ string message;
 // keeping track of the score.
 int score = 0;
 // for testing objects
-bool testMode = false;
+bool testMode = true;
 
 GLuint blurShaderProgramHandle, shiftShaderProgramHandle;
 GLuint passTextureShaderProgramHandle, glowShaderProgramHandle;
