@@ -27,10 +27,12 @@ public:
     float getX() { return position.getX(); }
     float getY() { return position.getY(); }
     float getZ() { return position.getZ(); }
+	float getCollideY(){ return position.getY() + 4.0; }
 
     Point getPosition() { return position; }
 
     float getScale() { return( scale ); }
+	float getRadius() { return radius; }
 
     void calcRandAsteroidSizeScaler();
 private:
@@ -48,4 +50,6 @@ private:
     float deltaPos;
     // Scale
     float scale;
+	// radius for spherical collision detection
+	float radius;
 };

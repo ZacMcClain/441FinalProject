@@ -7,7 +7,7 @@ Enemy::Enemy( float x, float y, float z, float shipX, float shipY ) {
     direction = target - position;
     direction.normalize();
     // find the rotation parameters
-    angle = ( 180.0 / M_PI * acos(dot(direction, Vector(0.0, 0.0, 1.0))) );
+    angle = ( 180.0 / 3.14159265 * acos(dot(direction, Vector(0.0, 0.0, 1.0))) );
     axis = cross( Vector(0.0, 0.0, 1.0), direction );
 
     // generate a spin speed and random move speed
@@ -15,6 +15,8 @@ Enemy::Enemy( float x, float y, float z, float shipX, float shipY ) {
     deltaRot = rand() % 6;
     // init the scaling factor default to 1;
     scale = 1;
+	
+	radius = 3.0;
 }
 
 // Moves towards the target
