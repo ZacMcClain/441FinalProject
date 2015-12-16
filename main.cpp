@@ -320,7 +320,7 @@ void drawLasers()
     glDisable(GL_LIGHTING);
     glEnable(GL_LINE_SMOOTH);
 	glLineWidth( 5 );
-	glTranslatef(50*shipScale + ship->getX(), 21.5*shipScale + ship->getY(), 0.0);
+	glTranslatef(50*shipScale + ship->getX(), 21.5*shipScale + ship->getY(), 50*shipScale);
 	// glRotate with ship direction
 	glBegin(GL_LINES);
 	  glColor3f(1.0f, 0.0f, 0.0f);
@@ -334,7 +334,7 @@ void drawLasers()
     glDisable(GL_LIGHTING);
     glEnable(GL_LINE_SMOOTH);
 	glLineWidth( 5 );
-	glTranslatef(50*shipScale + ship->getX(), 15.5*shipScale + ship->getY(), 0.0);
+	glTranslatef(50*shipScale + ship->getX(), 15.5*shipScale + ship->getY(), 50*shipScale);
 	// glRotate with ship direction
 	glBegin(GL_LINES);
 	  glColor3f(1.0f, 0.0f, 0.0f);
@@ -348,7 +348,7 @@ void drawLasers()
     glDisable(GL_LIGHTING);
     glEnable(GL_LINE_SMOOTH);
 	glLineWidth( 5 );
-	glTranslatef(-50*shipScale + ship->getX(), 21.5*shipScale + ship->getY(), 0.0);
+	glTranslatef(-50*shipScale + ship->getX(), 21.5*shipScale + ship->getY(), 50*shipScale);
 	// glRotate with ship direction
 	glBegin(GL_LINES);
 	  glColor3f(1.0f, 0.0f, 0.0f);
@@ -363,7 +363,7 @@ void drawLasers()
     glDisable(GL_LIGHTING);
     glEnable(GL_LINE_SMOOTH);
 	glLineWidth( 5 );
-	glTranslatef(-50*shipScale + ship->getX(), 15.5*shipScale + ship->getY(), 0.0);
+	glTranslatef(-50*shipScale + ship->getX(), 15.5*shipScale + ship->getY(), 50*shipScale);
 	// glRotate with ship direction
 	glBegin(GL_LINES);
 	  glColor3f(1.0f, 0.0f, 0.0f);
