@@ -62,13 +62,15 @@ bool gameOver = false;
 // keeping track of the score.
 int score = 0;
 // for testing objects
-bool testMode = true;
+bool testMode = false;
 
+// shader handles
 GLuint blurShaderProgramHandle, shiftShaderProgramHandle;
 GLuint passTextureShaderProgramHandle, glowShaderProgramHandle;
+// shader uniforms
 GLuint framebufferSizeLoc, fbSizeLoc, blurSizeLoc, shiftTimeLoc, passTimeLoc, passHitLoc;
-GLfloat BLUR_SIZE = 1;
 
+// Frame buffer stuff
 GLuint framebufferHandle;
 GLuint renderbufferHandle;
 GLuint framebufferWidth, framebufferHeight;
@@ -157,6 +159,7 @@ void init( const char *filename, const char *animfile )
     glEnable( GL_COLOR_MATERIAL );
     glColorMaterial( GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE );
     
+    // lighting init
 	glEnable( GL_LIGHTING );
 	glEnable( GL_LIGHT0 );
     float lightCol[4] = { 1,1,1,1 };
@@ -173,6 +176,7 @@ void init( const char *filename, const char *animfile )
     glLightf( GL_LIGHT1, GL_SPOT_CUTOFF, 50.0 );
 	glLightf( GL_LIGHT1, GL_SPOT_EXPONENT, 100 );
     
+    // GL settings
     glDisable( GL_CULL_FACE );
     glEnable( GL_NORMALIZE );
     glEnable( GL_DEPTH_TEST );
@@ -183,11 +187,13 @@ void init( const char *filename, const char *animfile )
     //if your object has a blocky surface, you probably want to disable this.
     glShadeModel( GL_SMOOTH );
     
+    // object set up
     mouse = new Mouse();
     skyBox = new SkyBox();
     // init our camera to a nice starting point
     cam = new ArcballCamera( 35.0f, 0.0f, PI / 2.0f );
     
+    // Coloring setup
     glEnable( GL_BLEND );
     glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
     
@@ -279,52 +285,66 @@ void reshape( int w, int h )
     glLoadIdentity();
 }
 
-void drawText()
+// This function is used to draw the game over screen
+void drawGameOverScreen()
 {
+    // Disable lighting, depth test and tex 2d so we can see the text
     glDisable( GL_TEXTURE_2D );
     glDisable( GL_DEPTH_TEST );
     glDisable( GL_LIGHTING );
 
+    // We want to use the projection matrix
     glMatrixMode( GL_PROJECTION );
   
     glPushMatrix();
     {
         glLoadIdentity();
 
+        // We are drawing in 2d
         gluOrtho2D( 0, window.getWidth(), 0, window.getHeight() );
+        // go back to the model view matrix
         glMatrixMode( GL_MODELVIEW );
         glLoadIdentity();
-    
+
+        // calc our message location on the screen 
         float messageH = (window.getHeight()/2);
         float messageW = (window.getWidth()/2);
         string message1 = "GAME OVER";
         string message2 = "Score: " + to_string( score );
 
+        // draw the message one char at a time
         for( int i = 0; i < message1.length(); i++ ) {
             glColor4f( 1, 0, 0, 1 );
             glRasterPos2f( (i * 15) + (messageW - (message1.length()*15 + 10)), messageH );
             glutBitmapCharacter( GLUT_BITMAP_TIMES_ROMAN_24, message1.at(i) );
         }
 
+        // adjust for the next message
         messageH -= (window.getWidth()/14);
         messageW -= 15;
 
+        // draw this message
         for( int i = 0; i < message2.length(); i++ ) {
             glColor4f( 1, 1, 0, 1 );
             glRasterPos2f( (i * 15) + (messageW - (message2.length()*15 + 10)), messageH );
             glutBitmapCharacter( GLUT_BITMAP_TIMES_ROMAN_24, message2.at(i) );
         }
+        // switch back to projection
         glMatrixMode( GL_PROJECTION );
     };
-    glPopMatrix();
+    glPopMatrix(); // pop it so we are in 3D perspective again
 
+    // switch back to model view (good form)
     glMatrixMode( GL_MODELVIEW );
 
+    // re-enable what we disabled (good form)
     glEnable( GL_LIGHTING );
     glEnable( GL_DEPTH_TEST );
     glEnable( GL_TEXTURE_2D );
 }
 
+// Draws the life bar (and its text) to the bottom of the window
+// as well as the live score display in the top right.
 void drawLifeBar()
 {
     glDisable( GL_TEXTURE_2D );
@@ -341,6 +361,7 @@ void drawLifeBar()
         glMatrixMode( GL_MODELVIEW );
         glLoadIdentity();
 
+        // how much of the bar do we need to fill
         float percentAlive = ( (float)ship->getLife()/(float)ship->getMaxLife() );
 
         glBegin( GL_QUADS ); {
@@ -351,6 +372,7 @@ void drawLifeBar()
             glVertex2f( 0,(window.getHeight() * 0.075) ); // bottom left
         }; glEnd();
 
+        // Where our life text should go.
         float messageH = ( window.getHeight()*0.03 );
         float messageW = ( window.getWidth()*0.58 );
 
@@ -362,6 +384,7 @@ void drawLifeBar()
             glutBitmapCharacter( GLUT_BITMAP_HELVETICA_12, message.at(i) );
         }
 
+        // Where our score text should go.
         messageH = ( window.getHeight()*0.95 );
         messageW = ( window.getWidth() );
 
@@ -403,91 +426,90 @@ void drawLasers()
         glEnable(GL_LIGHTING);
     glPopMatrix();
   
-  glPushMatrix();
-    glDisable(GL_LIGHTING);
-    glEnable(GL_LINE_SMOOTH);
-	glLineWidth( 5 );
-	glTranslatef(50*shipScale + ship->getX(), 15.5*shipScale + ship->getY(), 50*shipScale);
-	// glRotate with ship direction
-	glBegin(GL_LINES);
-	  glColor3f(1.0f, 0.0f, 0.0f);
-	  glVertex3f(0, 0, 0);
-	  glVertex3f(0, 0, 100*shipScale);
-	glEnd();
-    glEnable(GL_LIGHTING);
-  glPopMatrix();
+    glPushMatrix();
+        glDisable(GL_LIGHTING);
+        glEnable(GL_LINE_SMOOTH);
+	    glLineWidth( 5 );
+	    glTranslatef(50*shipScale + ship->getX(), 15.5*shipScale + ship->getY(), 50*shipScale);
+	    // glRotate with ship direction
+	    glBegin(GL_LINES);
+	        glColor3f(1.0f, 0.0f, 0.0f);
+	        glVertex3f(0, 0, 0);
+	        glVertex3f(0, 0, 100*shipScale);
+	   glEnd();
+        glEnable(GL_LIGHTING);
+    glPopMatrix();
   
-  glPushMatrix();
-    glDisable(GL_LIGHTING);
-    glEnable(GL_LINE_SMOOTH);
-	glLineWidth( 5 );
-	glTranslatef(-50*shipScale + ship->getX(), 21.5*shipScale + ship->getY(), 50*shipScale);
-	// glRotate with ship direction
-	glBegin(GL_LINES);
-	  glColor3f(1.0f, 0.0f, 0.0f);
-	  glVertex3f(0, 0, 0);
-	  glVertex3f(0, 0, 100*shipScale);
-	glEnd();
-  
-  glEnable(GL_LIGHTING);
-  glPopMatrix();
+    glPushMatrix();
+        glDisable(GL_LIGHTING);
+        glEnable(GL_LINE_SMOOTH);
+	    glLineWidth( 5 );
+	    glTranslatef(-50*shipScale + ship->getX(), 21.5*shipScale + ship->getY(), 50*shipScale);
+	    // glRotate with ship direction
+	    glBegin(GL_LINES);
+	        glColor3f(1.0f, 0.0f, 0.0f);
+	        glVertex3f(0, 0, 0);
+	        glVertex3f(0, 0, 100*shipScale);
+	    glEnd();
+        glEnable(GL_LIGHTING);
+    glPopMatrix();
 
-  glPushMatrix();
-    glDisable(GL_LIGHTING);
-    glEnable(GL_LINE_SMOOTH);
-	glLineWidth( 5 );
-	glTranslatef(-50*shipScale + ship->getX(), 15.5*shipScale + ship->getY(), 50*shipScale);
-	// glRotate with ship direction
-	glBegin(GL_LINES);
-	  glColor3f(1.0f, 0.0f, 0.0f);
-	  glVertex3f(0, 0, 0);
-	  glVertex3f(0, 0, 100*shipScale);
-	glEnd();
-    glEnable(GL_LIGHTING);
-  glPopMatrix();
+    glPushMatrix();
+        glDisable(GL_LIGHTING);
+        glEnable(GL_LINE_SMOOTH);
+	    glLineWidth( 5 );
+	    glTranslatef(-50*shipScale + ship->getX(), 15.5*shipScale + ship->getY(), 50*shipScale);
+	    // glRotate with ship direction
+	    glBegin(GL_LINES);
+	        glColor3f(1.0f, 0.0f, 0.0f);
+	        glVertex3f(0, 0, 0);
+	        glVertex3f(0, 0, 100*shipScale);
+	    glEnd();
+        glEnable(GL_LIGHTING);
+    glPopMatrix();
   
-  glPushMatrix();
-    glDisable(GL_LIGHTING);
-    glEnable(GL_LINE_SMOOTH);
-	glLineWidth( 5 );
-	glTranslatef( ship->getX(), 22*shipScale + ship->getY(), 100.0);
-	// glRotate with ship direction
-	glBegin(GL_LINES);
-	  glColor3f(1.0f, 0.0f, 0.0f);
-	  glVertex3f(0, 0, 0);
-	  glVertex3f(0, 0, 100*shipScale);
-	glEnd();
-	glLineWidth( 1 );
-    glEnable(GL_LIGHTING);
-  glPopMatrix();
+    glPushMatrix();
+        glDisable(GL_LIGHTING);
+        glEnable(GL_LINE_SMOOTH);
+	    glLineWidth( 5 );
+	    glTranslatef( ship->getX(), 22*shipScale + ship->getY(), 100.0);
+	    // glRotate with ship direction
+	    glBegin(GL_LINES);
+	        glColor3f(1.0f, 0.0f, 0.0f);
+	        glVertex3f(0, 0, 0);
+	        glVertex3f(0, 0, 100*shipScale);
+	    glEnd();
+	    glLineWidth( 1 );
+        glEnable(GL_LIGHTING);
+    glPopMatrix();
 
-  glEnable( GL_TEXTURE_2D );
+    glEnable( GL_TEXTURE_2D );
 }
 
 // Draws objects that should glow (just the lasers when finished)
 void drawGlowObjs() {
     // just a cube for testing
     if( testMode ) {
-        double curent_time =  (double)glutGet(GLUT_ELAPSED_TIME) / 1000.0;
+        double curent_time = ( (double)glutGet(GLUT_ELAPSED_TIME) / 1000.0 );
         glDisable( GL_TEXTURE_2D) ;
-        glColor4f(0, 1, 0, 1);
+        glColor4f( 0, 1, 0, 1 );
         glPushMatrix(); {
-            glTranslatef(sin(curent_time)*5, cos(curent_time)*3 + 2.15, 20);
-            glutSolidCube(3);
+            glTranslatef( sin(curent_time)*5, cos(curent_time)*3 + 2.15, 20 );
+            glutSolidCube( 3 );
         } glPopMatrix();
 		
 		glPushMatrix();
-			glDisable(GL_LIGHTING);
-			glEnable(GL_LINE_SMOOTH);
+			glDisable( GL_LIGHTING );
+			glEnable( GL_LINE_SMOOTH );
 			glLineWidth( 5 );
 			// glRotate with ship direction
-			glBegin(GL_LINES);
-			  glColor3f(1.0f, 0.0f, 0.0f);
-			  glVertex3f(ship->getX(), 22*shipScale + ship->getY(), 0);
-			  glVertex3f(ship->getX(), 22*shipScale + ship->getY(), 100.0);
+			glBegin( GL_LINES );
+			  glColor3f( 1.0f, 0.0f, 0.0f );
+			  glVertex3f( ship->getX(), 22*shipScale + ship->getY(), 0 );
+			  glVertex3f( ship->getX(), 22*shipScale + ship->getY(), 100.0 );
 			glEnd();
 			glLineWidth( 1 );
-			glEnable(GL_LIGHTING);
+			glEnable( GL_LIGHTING );
 	    glPopMatrix();
 		
         glEnable( GL_TEXTURE_2D );
@@ -501,9 +523,9 @@ void drawGlowObjs() {
 
 void renderScene()
 {
+    // Current time; used in the shift shader
     static double curent_time = 0;
     static double last_time = 0;
-    
     last_time = curent_time;
     curent_time = ( (double)glutGet(GLUT_ELAPSED_TIME) / 1000.0 );
 
@@ -525,15 +547,15 @@ void renderScene()
     glUniform1i(passHitLoc, shakeCount); // if > 0, shakes the ship left/right
     glBindTexture( GL_TEXTURE_2D, *textures.at("x-wing") );
     glPushMatrix(); {
-      ship->translate();
-      glScalef( shipScale, shipScale, shipScale );
-      ship->draw();
+        ship->translate();
+        glScalef( shipScale, shipScale, shipScale );
+        ship->draw();
     } glPopMatrix();
     
     if( testMode ) {
         glPushMatrix(); {
-          glTranslatef( ship->getX(), ship->getY() + 20*shipScale, 0.0 );
-          glutWireSphere( 3.0, 10, 10 );
+            glTranslatef( ship->getX(), ship->getY() + 20*shipScale, 0.0 );
+            glutWireSphere( 3.0, 10, 10 );
         } glPopMatrix();
     }
 
@@ -672,7 +694,7 @@ void display()
     glEnable( GL_DEPTH_TEST );
 
     if( gameOver ){
-        drawText();
+        drawGameOverScreen();
     } else {
         drawLifeBar();
     }
@@ -680,6 +702,7 @@ void display()
     glutSwapBuffers();
 }
 
+// Clean up when we are done
 void cleanup() {
     // free memory
     delete mouse;
@@ -695,11 +718,6 @@ void keyboard( unsigned char key, int x, int y )
     /* Escape */
     if( (key == 27) || (key == 'q') || (key == 'Q') ){
         exit( 0 );
-    } else if( key == '+' ) {
-        BLUR_SIZE += 1;
-    } else if( key == '-' ) {
-        BLUR_SIZE -= 1;
-        if( BLUR_SIZE < 1 ) BLUR_SIZE = 1;
     } else if( key == ' ' ) {
         // shoot laser
 		fireLaser = true;

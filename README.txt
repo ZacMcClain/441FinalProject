@@ -87,10 +87,9 @@ Distribution of work:
     	Project setup
     	Part of the glow shader
     	Loading and random sizing of the asteroid model
-    	Creation (using some of Walters code) of the ship class
-    	Life bar
+    	Creation (using some of Walters code) of the Ship class
+    	Life bar and live score display
     	Game over screen
-    	Small amount of group admin
 
     Tyler:
         Laser rendering/effects/interaction
