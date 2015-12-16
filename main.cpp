@@ -838,6 +838,7 @@ void update( int value ) {
     				{
     					// we hit a target sphere.
     					enemies.erase(enemies.begin() + i);
+						score++;
     				}
     			} else {
     				Point origin = Point( ship->getX(), 22*shipScale + ship->getY(), 0.0 );
