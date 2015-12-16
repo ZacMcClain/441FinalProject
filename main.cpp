@@ -59,8 +59,6 @@ Object* asteroidModel;
 
 // keep track of game status:
 bool gameOver = false;
-// end of game message:
-string message;
 // keeping track of the score.
 int score = 0;
 // for testing objects
@@ -284,6 +282,7 @@ void reshape( int w, int h )
 void drawText()
 {
     glDisable( GL_TEXTURE_2D );
+    glDisable( GL_DEPTH_TEST );
     glDisable( GL_LIGHTING );
 
     glMatrixMode( GL_PROJECTION );
@@ -296,18 +295,24 @@ void drawText()
         glMatrixMode( GL_MODELVIEW );
         glLoadIdentity();
     
-        float messageH = 10.0f;
-    
-        for( int i = 0; i < message.length(); i++ ) {
-            if( gameOver ) {
-                glColor4f( 0, 1, 0, 1 );
-                message = "You died!!! With a score of: " + to_string( score ) + ". Press 'q' to quit";
-                messageH = (window.getHeight()/4);
-            } else {
-                glColor4f( 1, 1, 1, 1 );
-            }
-            glRasterPos2f( (i * 12) + (window.getWidth()-(message.length()*12 + 10)), messageH );
-            glutBitmapCharacter( GLUT_BITMAP_HELVETICA_18, message.at(i) );
+        float messageH = (window.getHeight()/2);
+        float messageW = (window.getWidth()/2);
+        string message1 = "GAME OVER";
+        string message2 = "Score: " + to_string( score );
+
+        for( int i = 0; i < message1.length(); i++ ) {
+            glColor4f( 1, 0, 0, 1 );
+            glRasterPos2f( (i * 15) + (messageW - (message1.length()*15 + 10)), messageH );
+            glutBitmapCharacter( GLUT_BITMAP_TIMES_ROMAN_24, message1.at(i) );
+        }
+
+        messageH -= (window.getWidth()/14);
+        messageW -= 15;
+
+        for( int i = 0; i < message2.length(); i++ ) {
+            glColor4f( 1, 1, 0, 1 );
+            glRasterPos2f( (i * 15) + (messageW - (message2.length()*15 + 10)), messageH );
+            glutBitmapCharacter( GLUT_BITMAP_TIMES_ROMAN_24, message2.at(i) );
         }
         glMatrixMode( GL_PROJECTION );
     };
@@ -316,6 +321,7 @@ void drawText()
     glMatrixMode( GL_MODELVIEW );
 
     glEnable( GL_LIGHTING );
+    glEnable( GL_DEPTH_TEST );
     glEnable( GL_TEXTURE_2D );
 }
 
@@ -462,15 +468,99 @@ void drawGlowObjs() {
     }
 }
 
-void display() {
+void renderScene()
+{
     static double curent_time = 0;
     static double last_time = 0;
     
     last_time = curent_time;
     curent_time = ( (double)glutGet(GLUT_ELAPSED_TIME) / 1000.0 );
+
+    // Clear the screen now
+    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
     
+    // Render the background with the "shifting texture" shader
+    glUseProgram( shiftShaderProgramHandle );
+    glUniform1f( shiftTimeLoc, (float)curent_time );
+    glLoadIdentity();
+
+    cam->lookAt();
+
+    skyBox->drawSkybox( 300 );
+
+    // And now render the ship...
+    glUseProgram(passTextureShaderProgramHandle);
+    glUniform1f(passTimeLoc, (float)curent_time);
+    glUniform1i(passHitLoc, shakeCount); // if > 0, shakes the ship left/right
+    glBindTexture( GL_TEXTURE_2D, *textures.at("x-wing") );
+    glPushMatrix(); {
+      ship->translate();
+      glScalef( shipScale, shipScale, shipScale );
+      ship->draw();
+    } glPopMatrix();
+    
+    if( testMode ) {
+        glPushMatrix(); {
+          glTranslatef( ship->getX(), ship->getY() + 20*shipScale, 0.0 );
+          glutWireSphere( 3.0, 10, 10 );
+        } glPopMatrix();
+    }
+
+    glBindTexture( GL_TEXTURE_2D, 0 );
+
+    // position the spot light and direction
+    float spotlightPosition[4] = { ship->getX(), static_cast<float>(21.5*shipScale + ship->getY()), 0.0, 1.0 };
+    glLightfv( GL_LIGHT1, GL_POSITION, spotlightPosition );
+    GLfloat spotlightDirection[4] = { 0.0, 0.0, 1.0, 0.0};
+    glLightfv( GL_LIGHT1, GL_SPOT_DIRECTION, spotlightDirection );
+
+    // Draw tie fighter or asteroid at each enemy position
+    if( !gameOver ){
+        for( int i = 0; i < enemies.size(); i++ ) {
+            glPushMatrix(); {
+                glTranslatef(enemies[i].getX(), enemies[i].getY(), enemies[i].getZ()); 
+                enemies[i].callRotate();
+                if( enemies[i].type == Enemy::SHIP ){
+                    glBindTexture( GL_TEXTURE_2D, *textures.at("tiefighter"));
+                    enemyModel->draw();
+                } else {          
+                    glBindTexture( GL_TEXTURE_2D, *textures.at("asteroidModel") );
+                    float asteroidModelScale = enemies[i].getScale();
+                    glScalef( asteroidModelScale, asteroidModelScale, asteroidModelScale );
+                    asteroidModel->draw();
+                }
+                glBindTexture( GL_TEXTURE_2D, 0 );
+            } glPopMatrix(); 
+                
+            // draw collision wires
+            if( testMode ) {
+                if( enemies[i].type == Enemy::SHIP ){
+                    glPushMatrix(); {
+                        glUseProgram(0);
+                        glColor3f(1, 0, 0);
+                        glTranslatef( enemies[i].getX(), enemies[i].getCollideY(), enemies[i].getZ() );
+                        glutWireSphere( 3.0, 10, 10 );
+                        glUseProgram(passTextureShaderProgramHandle);
+                    } glPopMatrix();
+                } else {
+                    glPushMatrix(); {
+                        glUseProgram(0);
+                        glColor3f(1, 0, 0);
+                        glTranslatef( enemies[i].getX(), enemies[i].getY(), enemies[i].getZ() );
+                        glutWireSphere( enemies[i].getScale()*10, 10, 10 );
+                        glUseProgram(passTextureShaderProgramHandle);
+                    } glPopMatrix();
+                }
+            }
+        }
+    }
+}
+
+void display() 
+{
     // Bind Framebuffer and render glowing objects to framebuffer texture
     glBindFramebuffer( GL_FRAMEBUFFER, framebufferHandle );
+
         // push viewport to stack 
         glPushAttrib( GL_VIEWPORT_BIT ); {
             // Set the rendering viewport to match the framebuffer dimensions
@@ -489,6 +579,10 @@ void display() {
             glLightfv( GL_LIGHT0, GL_POSITION, lPosition );
             
             glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
+            if( gameOver ){
+                // we want every thing to be in the buffer so we can blur it.
+                renderScene();
+            }
             // Draws only objects that should glow
             drawGlowObjs();
 
@@ -499,81 +593,9 @@ void display() {
         
     // Unbind framebuffer
     glBindFramebuffer( GL_FRAMEBUFFER, 0 );
-    // Clear the screen now
-    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-    
-    // Render the background with the "shifting texture" shader
-    glUseProgram(shiftShaderProgramHandle);
-    glUniform1f(shiftTimeLoc, (float)curent_time);
-    glLoadIdentity();
 
-    cam->lookAt();
-
-    skyBox->drawSkybox( 300 );
-
-    // And now render the ship...
-    glUseProgram(passTextureShaderProgramHandle);
-    glUniform1f(passTimeLoc, (float)curent_time);
-    glUniform1i(passHitLoc, shakeCount); // if > 0, shakes the ship left/right
-    glBindTexture( GL_TEXTURE_2D, *textures.at("x-wing") );
-    glPushMatrix(); {
-      ship->translate();
-      glScalef( shipScale, shipScale, shipScale );
-      ship->draw();
-    } glPopMatrix();
-	
-    if( testMode ) {
-    	glPushMatrix(); {
-          glTranslatef( ship->getX(), ship->getY() + 20*shipScale, 0.0 );
-          glutWireSphere( 3.0, 10, 10 );
-        } glPopMatrix();
-    }
-
-    glBindTexture( GL_TEXTURE_2D, 0 );
-
-	// position the spot light and direction
-	float spotlightPosition[4] = { ship->getX(), static_cast<float>(21.5*shipScale + ship->getY()), 0.0, 1.0 };
-	glLightfv( GL_LIGHT1, GL_POSITION, spotlightPosition );
-	GLfloat spotlightDirection[4] = { 0.0, 0.0, 1.0, 0.0};
-	glLightfv( GL_LIGHT1, GL_SPOT_DIRECTION, spotlightDirection );
-
-    // Draw tie fighter or asteroid at each enemy position
-    for( int i = 0; i < enemies.size(); i++ ) {
-        glPushMatrix(); {
-            glTranslatef(enemies[i].getX(), enemies[i].getY(), enemies[i].getZ()); 
-            enemies[i].callRotate();
-            if( enemies[i].type == Enemy::SHIP ){
-                glBindTexture( GL_TEXTURE_2D, *textures.at("tiefighter"));
-                enemyModel->draw();
-            } else {          
-                glBindTexture( GL_TEXTURE_2D, *textures.at("asteroidModel") );
-                float asteroidModelScale = enemies[i].getScale();
-                glScalef( asteroidModelScale, asteroidModelScale, asteroidModelScale );
-                asteroidModel->draw();
-            }
-            glBindTexture( GL_TEXTURE_2D, 0 );
-        } glPopMatrix(); 
-			
-		// draw collision wires
-        if( testMode ) {
-    		if( enemies[i].type == Enemy::SHIP ){
-    			glPushMatrix(); {
-    				glUseProgram(0);
-    				glColor3f(1, 0, 0);
-    				glTranslatef( enemies[i].getX(), enemies[i].getCollideY(), enemies[i].getZ() );
-    				glutWireSphere( 3.0, 10, 10 );
-    				glUseProgram(passTextureShaderProgramHandle);
-    			} glPopMatrix();
-    		} else {
-    			glPushMatrix(); {
-    				glUseProgram(0);
-    				glColor3f(1, 0, 0);
-    				glTranslatef( enemies[i].getX(), enemies[i].getY(), enemies[i].getZ() );
-    				glutWireSphere( enemies[i].getScale()*10, 10, 10 );
-    				glUseProgram(passTextureShaderProgramHandle);
-    			} glPopMatrix();
-    		}
-        }
+    if( !gameOver ){
+        renderScene();
     }
 
     // Then render the framebuffer contents as a textured 2d quad
@@ -592,10 +614,16 @@ void display() {
 
         glBindTexture( GL_TEXTURE_2D, fboTexHandle );
 
-        glUseProgram( glowShaderProgramHandle ); 
-        // Pass the framebuffersize and the blursize to the shader
-        glUniform1f( fbSizeLoc, (float)framebufferWidth );
-        //glUniform1f( blurSizeLoc, BLUR_SIZE );
+        if( gameOver) {
+            glUseProgram( blurShaderProgramHandle ); 
+            // Pass the framebuffersize and the blursize to the shader
+            glUniform1f( framebufferSizeLoc, (float)framebufferWidth );
+            glUniform1f( blurSizeLoc, 10 );
+        } else {
+            glUseProgram( glowShaderProgramHandle ); 
+            // Pass the framebuffersize and the blursize to the shader
+            glUniform1f( fbSizeLoc, (float)framebufferWidth );
+        }
         
         glBegin( GL_QUADS ); {
             glTexCoord2f( 0,0 ); glVertex2f( -1,-1 );
@@ -612,7 +640,11 @@ void display() {
     glEnable( GL_LIGHTING );
     glEnable( GL_DEPTH_TEST );
 
-    drawLifeBar();
+    if( gameOver ){
+        drawText();
+    } else {
+        drawLifeBar();
+    }
 
     glutSwapBuffers();
 }
@@ -655,7 +687,7 @@ void keyboard( unsigned char key, int x, int y )
         shakeCount = 40;
     } else if( key == '2' ) {
         // TESTING THE LIFE BAR
-        ship->setLife( ship->getLife() - 5 );
+        ship->setLife( ship->getLife() - 50 );
     }
 }
 
@@ -675,85 +707,94 @@ void keyboardUp( unsigned char key, int x, int y )
 	}
 }
 
-// void myTimer(int value)
+// void update(int value)
 //
-//  We have to take an integer as input per GLUT's timer function prototype;
-//  but we don't use that value so just ignore it. We'll register this function
-//  once at the start of the program, and then every time it gets called it
-//  will perpetually re-register itself and tell GLUT that the screen needs
-//  be redrawn. yes, I said "needs be."
-//
+//  An integer as input must be taken per GLUT's timer function prototype;
+//  we don't end up using that value we just ignore it. This function
+//  will be registered with GLUT in main, and then every time it gets called it
+//  will perpetually re-call itself tell GLUT that the screen must be re-rendered
 void update( int value ) {
+
+    // check to see if we are dead and the game is over.
+    if( ship->getLife() <= 0 ){
+        gameOver = true;
+    }
+
     // Decrease the ship shake count
     if (shakeCount > 0) shakeCount--;
-	
-	// put this before we decrease, so we skip two frame of drawing the laser when held down.
-	if( laserFrameCount == -1 && fireLaser == true )
-		laserFrameCount = 7;
-	// Decrease laserFrameCount 
-	if( laserFrameCount > -1 ) laserFrameCount--;
+    	
+    // put this before we decrease, so we skip two frame of drawing the laser when held down.
+    if( laserFrameCount == -1 && fireLaser == true )
+    	laserFrameCount = 7;
+    // Decrease laserFrameCount 
+    if( laserFrameCount > -1 ) laserFrameCount--;
 
     ship->moveUp( keysPressed['w' - 'a'] );
     ship->moveDown( keysPressed['s' - 'a'] );
     ship->moveLeft( keysPressed[0] );
     ship->moveRight( keysPressed['d' - 'a'] );
 
-    // Chance to spawn new enemy
-    int r = rand() % 100;
-    if (r < 1) {
-        // generate random position right behind the skybox
-        int x = rand() % 100 - 50;
-        int y = rand() % 100 - 50;
-        Enemy e( x,y,300, ship->getX(), ship->getY() );
-        int tp = rand() % 2;
-        e.type = ( tp == 0 ) ? Enemy::SHIP : Enemy::ROCK;
-        if( e.type == Enemy::ROCK ) e.calcRandAsteroidSizeScaler();
-        enemies.push_back( e );
-    }
+    if( !gameOver ){ // stop spawning enemies
 
-    // Move enemies towards the ship
-    for (int i = 0; i < enemies.size(); i++) {
-        enemies[i].move();
-    }
-
-    // Remove enemies that pass the plane
-    for (int i = 0; i < enemies.size(); i++) {
-        if (enemies[i].getZ() < -10) {
-            enemies.erase(enemies.begin() + i);
-            i--;
+        // Chance to spawn new enemy
+        int r = rand() % 100;
+        if (r < 1) {
+            // generate random position right behind the skybox
+            int x = rand() % 100 - 50;
+            int y = rand() % 100 - 50;
+            Enemy e( x,y,300, ship->getX(), ship->getY() );
+            int tp = rand() % 2;
+            e.type = ( tp == 0 ) ? Enemy::SHIP : Enemy::ROCK;
+            if( e.type == Enemy::ROCK ) e.calcRandAsteroidSizeScaler();
+            enemies.push_back( e );
         }
-    }
-	
-	// detect collision with x-wing
-	for( int i = 0; i < enemies.size(); i++ )
-	{
-		if( enemies[i].type == Enemy::SHIP ){
-			double dx = enemies[i].getX() - ship->getX();
-			double dy = enemies[i].getCollideY() - (ship->getY() + 20*shipScale);
-			double dz = enemies[i].getZ();
-			double distance = sqrt( (dx)*(dx) + (dy)*(dy) + (dz)*(dz) );
-			double sumRadii = enemies[i].getRadius() + 3;
-			if( distance - sumRadii < 0 )
-			{
-				shakeCount = 60;
-                ship->setLife( ship->getLife() - 20 );
-			}
-		} else {
-			double dx = enemies[i].getX() - ship->getX();
-			double dy = enemies[i].getY() - (ship->getY() + 20*shipScale);
-			double dz = enemies[i].getZ();
-			double distance = sqrt( (dx)*(dx) + (dy)*(dy) + (dz)*(dz) );
-			double sumRadii = enemies[i].getScale()*10 + 3;
-			if( distance - sumRadii < 0 )
-			{
-				shakeCount = 60;
-                ship->setLife( ship->getLife() - 20 );
-			}
-		}
-	}
 
+        // Move enemies towards the ship
+        for (int i = 0; i < enemies.size(); i++) {
+            enemies[i].move();
+        }
+
+        // Remove enemies that pass the plane
+        for (int i = 0; i < enemies.size(); i++) {
+            if (enemies[i].getZ() < -10) {
+                enemies.erase(enemies.begin() + i);
+                i--;
+            }
+        }
+    	
+    	// detect collision with x-wing
+    	for( int i = 0; i < enemies.size(); i++ )
+    	{
+    		if( enemies[i].type == Enemy::SHIP ){
+    			double dx = enemies[i].getX() - ship->getX();
+    			double dy = enemies[i].getCollideY() - (ship->getY() + 20*shipScale);
+    			double dz = enemies[i].getZ();
+    			double distance = sqrt( (dx)*(dx) + (dy)*(dy) + (dz)*(dz) );
+    			double sumRadii = enemies[i].getRadius() + 3;
+    			if( distance - sumRadii < 0 )
+    			{
+    				shakeCount = 60;
+                    ship->setLife( ship->getLife() - 20 );
+    			}
+    		} else {
+    			double dx = enemies[i].getX() - ship->getX();
+    			double dy = enemies[i].getY() - (ship->getY() + 20*shipScale);
+    			double dz = enemies[i].getZ();
+    			double distance = sqrt( (dx)*(dx) + (dy)*(dy) + (dz)*(dz) );
+    			double sumRadii = enemies[i].getScale()*10 + 3;
+    			if( distance - sumRadii < 0 )
+    			{
+    				shakeCount = 60;
+                    ship->setLife( ship->getLife() - 20 );
+    			}
+    		}
+    	}
+    }
+
+    // re-render
     glutPostRedisplay();
     
+    // re-registrar
     glutTimerFunc( (unsigned int)(1000.0 / 60.0), update, 0 );
 }
 
