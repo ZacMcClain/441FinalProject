@@ -1,7 +1,7 @@
 Names: 
 	Zac McClain ( Castamere Castelli / zamcclai@mines.edu )
 	Walter Schlosser ( All Might / wschloss@mymail.mines.edu )
-    Tyler Bank ( CoolPantsBro )
+        Tyler Bank ( CoolPantsBro / tbank@mymail.mines.edu )
 
 Program Title: 
 	Key To The Kingdom ( Final Project )
@@ -84,7 +84,11 @@ Distribution of work:
     	Life bar
     	Small amount of group admin
 
-    Tyler
+    Tyler:
+	Laser rendering/effects/interaction
+	Part of the glow shader
+	Attached spotlight to player ship
+	Bounding sphere collision detection
 
 Stats:
 	Time Investment:
