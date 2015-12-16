@@ -28,6 +28,8 @@
 #include "Enemy.h"
 #include "Ship.h"
 
+#define M_PI 3.14159265
+
 using namespace std;
 
 // GLOBAL VARIABLES ////////////////////////////////////////////////////////////
@@ -61,8 +63,6 @@ bool gameOver = false;
 string message;
 // keeping track of the score.
 int score = 0;
-
-const float M_PI = 3.14159265;
 
 GLuint blurShaderProgramHandle, shiftShaderProgramHandle;
 GLuint passTextureShaderProgramHandle, glowShaderProgramHandle;
@@ -472,7 +472,7 @@ void display() {
     glBindTexture( GL_TEXTURE_2D, 0 );
 
 	// position the spot light and direction
-	float spotlightPosition[4] = { ship->getX(), 21.5*shipScale + ship->getY(), 0.0, 1.0 };
+	float spotlightPosition[4] = { ship->getX(), 21.5f*shipScale + ship->getY(), 0.0, 1.0 };
 	glLightfv( GL_LIGHT1, GL_POSITION, spotlightPosition );
 	GLfloat spotlightDirection[4] = { 0.0, 0.0, 1.0, 0.0};
 	glLightfv( GL_LIGHT1, GL_SPOT_DIRECTION, spotlightDirection );
