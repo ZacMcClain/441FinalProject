@@ -1,5 +1,5 @@
 Names: 
-	Zac McClain ( Castamere Castelli )
+	Zac McClain ( Castamere Castelli / zamcclai@mines.edu )
 	Walter Schlosser ( All Might / wschloss@mymail.mines.edu )
     Tyler Bank ( CoolPantsBro )
 
@@ -32,10 +32,15 @@ Description:
 
 Usage:
 
-    'wasd'      -       Move the main ship around the screen
-    ' ' (space) -       Fire laser
-    left mouse  -       Click and drag to pan camera
-    right mouse -       Click and drag to zoom camera    
+    'wasd'        -       Move the main ship around the screen
+    ' ' (space)   -       Fire laser
+    left mouse    -       Click and drag to pan camera
+    right mouse   -       Click and drag to zoom camera
+    't', 'T' keys -       Testing mode toggle
+
+    Camera  - To pan around the ship click and drag the right mouse button.
+    		- To Zoom in or out click and drag the left mouse button.
+
 
 Build Instructions:
 
@@ -55,19 +60,29 @@ Build Instructions:
 Notes:
 
 	Bugs: 
+		Laser can be seen though the ship.
+		Collision detection of the Tie fighters enemies a bit off
+
 	Implementation Details:
+		... Please see comments in the source code for more details ...
 
 Distribution of work:
     
-    Walter
+    Walter:
         Framebuffer/Shader setup debugging
         Layered/Multipass rendering setup to apply shaders to specific objects
         Model loading and texturing
-        Enemy spawning
+        Enemy spawning and movement
         Shifting texture shader
         Pass/Red Shake shader 
 
-    Zac
+    Zac:
+    	Project setup
+    	Part of the glow shader
+    	Loading and random sizing of the asteroid model
+    	Creation (using some of Walters code) of the ship class
+    	Life bar
+    	Small amount of group admin
 
     Tyler
 
