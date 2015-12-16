@@ -436,6 +436,7 @@ void drawLasers()
 	  glVertex3f(0, 0, 0);
 	  glVertex3f(0, 0, 100*shipScale);
 	glEnd();
+	glLineWidth( 1 );
     glEnable(GL_LIGHTING);
   glPopMatrix();
 
@@ -464,6 +465,7 @@ void drawGlowObjs() {
 			  glVertex3f(ship->getX(), 22*shipScale + ship->getY(), 0);
 			  glVertex3f(ship->getX(), 22*shipScale + ship->getY(), 100.0);
 			glEnd();
+			glLineWidth( 1 );
 			glEnable(GL_LIGHTING);
 	    glPopMatrix();
 		

@@ -96,17 +96,18 @@ Distribution of work:
         Part of the glow shader
         Attached spotlight to player ship
         Bounding sphere collision detection
+	Raytrace collision detection with spheres for the laser.
 
 Stats:
 	Time Investment:
         Walter  - approx 8 hours
         Zac     -
-        Tyler   -
+        Tyler   - approx 8 hours
 	Learning Score[0, 10]:
         Walter  - 7/10
         Zac     -
-        Tyler   -
+        Tyler   - 8/10
 	Entertainment Score[0, 10]:
         Walter  - 8/10
         Zac     -
-        Tyler   -
+        Tyler   - 9/10
